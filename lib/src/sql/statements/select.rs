@@ -73,12 +73,12 @@ impl <'a>SelectStatement<'a> {
 		self.cond.as_ref().map_or(false, |v| v.writeable())
 	}
 
-	pub(crate) async fn compute<'b>(
+	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
-		opt: &Options,
-		txn: &Transaction<'b>,
-		doc: Option<&Value<'a>>,
+		opt: &'a Options,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 	) -> Result<Value<'a>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;

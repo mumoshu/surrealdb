@@ -17,7 +17,7 @@ use std::fmt;
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
 pub struct SetStatement<'a> {
 	pub name: String,
-	pub what: Value<'a>,
+	pub what: Value<'a>
 }
 
 impl <'a>SetStatement<'a> {
@@ -25,12 +25,12 @@ impl <'a>SetStatement<'a> {
 		self.what.writeable()
 	}
 
-	pub(crate) async fn compute<'b>(
-		&self,
+	pub(crate) async fn compute(
+		&'a self,
 		ctx: &Context<'_>,
-		opt: &Options,
-		txn: &Transaction<'b>,
-		doc: Option<&Value<'a>>,
+		opt: &'a Options,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 	) -> Result<Value<'a>, Error> {
 		self.what.compute(ctx, opt, txn, doc).await
 	}

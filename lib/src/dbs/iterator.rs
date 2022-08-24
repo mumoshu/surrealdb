@@ -69,7 +69,7 @@ impl <'a>Iterator<'a> {
 		opt: &Options,
 		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
-	) -> Result<Value, Error> {
+	) -> Result<Value<'_>, Error> {
 		// Log the statement
 		trace!(target: LOG, "Iterating: {}", stm);
 		// Enable context override

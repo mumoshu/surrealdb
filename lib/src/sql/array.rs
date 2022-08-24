@@ -19,37 +19,38 @@ use std::ops;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::borrow::Cow;
+use std::marker::PhantomData;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Deserialize)]
-pub struct Array(pub Vec<Value<'a>>);
+pub struct Array<'a>(pub Vec<Value<'a>>, PhantomData<&'a ()>,);
 
 impl <'a>From<Value<'a>> for Array<'a> {
-	fn from(v: Value) -> Self {
-		Array(&vec![v])
+	fn from(v: Value<'a>) -> Self {
+		Array(vec![v], PhantomData)
 	}
 }
 
 impl <'a>From<Vec<Value<'a>>> for Array<'a> {
 	fn from(v: Vec<Value>) -> Self {
-		Array(&v)
+		Array(v, PhantomData)
 	}
 }
 
 impl <'a>From<Vec<i32>> for Array<'a> {
 	fn from(v: Vec<i32>) -> Self {
-		Array(&v.into_iter().map(Value::from).collect())
+		Array(v.into_iter().map(Value::from).collect(), PhantomData)
 	}
 }
 
 impl <'a>From<Vec<&str>> for Array<'a> {
 	fn from(v: Vec<&str>) -> Self {
-		Array(&v.into_iter().map(Value::from).collect())
+		Array(v.into_iter().map(Value::from).collect(), PhantomData)
 	}
 }
 
 impl <'a>From<Vec<Operation<'_>>> for Array<'a> {
 	fn from(v: Vec<Operation>) -> Self {
-		Array(&v.into_iter().map(Value::from).collect())
+		Array(v.into_iter().map(Value::from).collect(), PhantomData)
 	}
 }
 
@@ -76,11 +77,11 @@ impl <'a>IntoIterator for Array<'a> {
 
 impl <'a>Array<'a> {
 	pub fn new() -> Self {
-		Array(&Vec::default())
+		Array(Vec::default(), PhantomData)
 	}
 
 	pub fn with_capacity(len: usize) -> Self {
-		Array(&Vec::with_capacity(len))
+		Array(Vec::with_capacity(len), PhantomData)
 	}
 
 	pub fn as_ints(self) -> Vec<i64> {
@@ -123,7 +124,7 @@ impl <'a>Array<'a> {
 				Err(e) => return Err(e),
 			};
 		}
-		Ok(Value::Array(&Array(x)))
+		Ok(Value::Array(Array(x, PhantomData)))
 	}
 }
 
@@ -341,7 +342,7 @@ pub fn array(i: &str) -> IResult<&str, Array> {
 	let (i, _) = opt(char(','))(i)?;
 	let (i, _) = mightbespace(i)?;
 	let (i, _) = char(']')(i)?;
-	Ok((i, Array(v.into_iter().map(Cow::from).collect())))
+	Ok((i, Array(v, PhantomData)))
 }
 
 fn item(i: &str) -> IResult<&str, Value> {

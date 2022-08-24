@@ -64,7 +64,7 @@ pub struct Values<'a>(pub Vec<Value<'a>>);
 impl <'a>Deref for Values<'a> {
 	type Target = Vec<Value<'a>>;
 	fn deref(&self) -> &Self::Target {
-		&self.0.iter().map(|x| x.into_owned()).collect()
+		&self.0
 	}
 }
 
@@ -72,7 +72,7 @@ impl <'a>IntoIterator for Values<'a> {
 	type Item = Value<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
-		self.0.into_iter().map(|x| x.into_owned()).into()
+		self.0.into_iter()
 	}
 }
 
@@ -84,17 +84,17 @@ impl <'a>fmt::Display for Values<'a> {
 
 pub fn values(i: &str) -> IResult<&str, Values> {
 	let (i, v) = separated_list1(commas, value)(i)?;
-	Ok((i, Values(v.iter().map(Into::into).collect())))
+	Ok((i, Values(v)))
 }
 
 pub fn selects(i: &str) -> IResult<&str, Values> {
 	let (i, v) = separated_list1(commas, select)(i)?;
-	Ok((i, Values(v.iter().map(Into::into).collect())))
+	Ok((i, Values(v)))
 }
 
 pub fn whats(i: &str) -> IResult<&str, Values> {
 	let (i, v) = separated_list1(commas, what)(i)?;
-	Ok((i, Values(v.iter().map(Into::into).collect())))
+	Ok((i, Values(v)))
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Deserialize, Store)]

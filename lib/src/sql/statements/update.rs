@@ -38,10 +38,10 @@ impl <'a>UpdateStatement<'a> {
 	pub(crate) async fn compute<'b>(
 		&self,
 		ctx: &Context<'_>,
-		opt: &Options,
-		txn: &Transaction<'b>,
-		doc: Option<&Value<'a>>,
-	) -> Result<Value<'a>, Error> {
+		opt: &'a Options,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'b>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
