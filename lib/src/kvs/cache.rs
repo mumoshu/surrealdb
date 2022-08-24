@@ -13,30 +13,30 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 #[derive(Clone)]
-pub enum Entry {
+pub enum Entry<'a> {
 	Ns(Arc<DefineNamespaceStatement>),
 	Db(Arc<DefineDatabaseStatement>),
-	Tb(Arc<DefineTableStatement>),
+	Tb(Arc<DefineTableStatement<'a>>),
 	Nss(Arc<Vec<DefineNamespaceStatement>>),
 	Nls(Arc<Vec<DefineLoginStatement>>),
 	Nts(Arc<Vec<DefineTokenStatement>>),
 	Dbs(Arc<Vec<DefineDatabaseStatement>>),
 	Dls(Arc<Vec<DefineLoginStatement>>),
 	Dts(Arc<Vec<DefineTokenStatement>>),
-	Scs(Arc<Vec<DefineScopeStatement>>),
+	Scs(Arc<Vec<DefineScopeStatement<'a>>>),
 	Sts(Arc<Vec<DefineTokenStatement>>),
-	Tbs(Arc<Vec<DefineTableStatement>>),
-	Evs(Arc<Vec<DefineEventStatement>>),
-	Fds(Arc<Vec<DefineFieldStatement>>),
-	Ixs(Arc<Vec<DefineIndexStatement>>),
-	Fts(Arc<Vec<DefineTableStatement>>),
-	Lvs(Arc<Vec<LiveStatement>>),
+	Tbs(Arc<Vec<DefineTableStatement<'a>>>),
+	Evs(Arc<Vec<DefineEventStatement<'a>>>),
+	Fds(Arc<Vec<DefineFieldStatement<'a>>>),
+	Ixs(Arc<Vec<DefineIndexStatement<'a>>>),
+	Fts(Arc<Vec<DefineTableStatement<'a>>>),
+	Lvs(Arc<Vec<LiveStatement<'a>>>),
 }
 
 #[derive(Default)]
-pub struct Cache(pub HashMap<Key, Entry>);
+pub struct Cache<'a>(pub HashMap<Key, Entry<'a>>);
 
-impl Cache {
+impl <'a>Cache<'a> {
 	// Check if key exists
 	pub fn exi(&mut self, key: &Key) -> bool {
 		self.0.contains_key(key)

@@ -21,43 +21,35 @@ use std::ops::DerefMut;
 use std::borrow::Cow;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Deserialize)]
-pub struct Array<'a>(pub CowValueVec<'a>);
-
-
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Deserialize)]
-pub struct CowValueVec<'a>(pub Vec<Cow<'a, Value<'a>>>);
-
-fn newArray<'a>(v: Vec<Value>) -> Array<'a> {
-	Array(CowValueVec(v.iter().map(|x| Cow::Borrowed(x))))
-}
+pub struct Array(pub Vec<Value<'a>>);
 
 impl <'a>From<Value<'a>> for Array<'a> {
 	fn from(v: Value) -> Self {
-		Array(vec![v])
+		Array(&vec![v])
 	}
 }
 
 impl <'a>From<Vec<Value<'a>>> for Array<'a> {
 	fn from(v: Vec<Value>) -> Self {
-		Array(v)
+		Array(&v)
 	}
 }
 
 impl <'a>From<Vec<i32>> for Array<'a> {
 	fn from(v: Vec<i32>) -> Self {
-		Array(v.into_iter().map(Value::from).collect())
+		Array(&v.into_iter().map(Value::from).collect())
 	}
 }
 
 impl <'a>From<Vec<&str>> for Array<'a> {
 	fn from(v: Vec<&str>) -> Self {
-		Array(v.into_iter().map(Value::from).collect())
+		Array(&v.into_iter().map(Value::from).collect())
 	}
 }
 
-impl <'a>From<Vec<Operation>> for Array<'a> {
+impl <'a>From<Vec<Operation<'_>>> for Array<'a> {
 	fn from(v: Vec<Operation>) -> Self {
-		Array(v.into_iter().map(Value::from).collect())
+		Array(&v.into_iter().map(Value::from).collect())
 	}
 }
 
@@ -78,17 +70,17 @@ impl <'a>IntoIterator for Array<'a> {
 	type Item = Value<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
-		self.0.into_iter()
+		self.0.to_vec().into_iter()
 	}
 }
 
 impl <'a>Array<'a> {
 	pub fn new() -> Self {
-		Array(Vec::default())
+		Array(&Vec::default())
 	}
 
 	pub fn with_capacity(len: usize) -> Self {
-		Array(Vec::with_capacity(len))
+		Array(&Vec::with_capacity(len))
 	}
 
 	pub fn as_ints(self) -> Vec<i64> {
@@ -121,8 +113,8 @@ impl <'a>Array<'a> {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value<'a>>,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 	) -> Result<Value, Error> {
 		let mut x = Vec::new();
 		for v in self.iter() {
@@ -349,7 +341,7 @@ pub fn array(i: &str) -> IResult<&str, Array> {
 	let (i, _) = opt(char(','))(i)?;
 	let (i, _) = mightbespace(i)?;
 	let (i, _) = char(']')(i)?;
-	Ok((i, Array(v)))
+	Ok((i, Array(v.into_iter().map(Cow::from).collect())))
 }
 
 fn item(i: &str) -> IResult<&str, Value> {

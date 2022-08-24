@@ -14,20 +14,20 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Graph {
+pub struct Graph<'a> {
 	pub dir: Dir,
 	pub what: Tables,
-	pub cond: Option<Cond>,
-	pub alias: Option<Idiom>,
+	pub cond: Option<Cond<'a>>,
+	pub alias: Option<Idiom<'a>>,
 }
 
-impl Graph {
+impl <'a>Graph<'a> {
 	pub fn to_raw(&self) -> String {
 		self.to_string()
 	}
 }
 
-impl fmt::Display for Graph {
+impl <'a>fmt::Display for Graph<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		if self.what.0.len() <= 1 && self.cond.is_none() && self.alias.is_none() {
 			write!(f, "{}", self.dir)?;

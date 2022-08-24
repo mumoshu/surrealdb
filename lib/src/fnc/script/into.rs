@@ -11,13 +11,13 @@ use js::Null;
 use js::Object;
 use js::Undefined;
 
-impl<'js> IntoJs<'js> for Value {
+impl<'js> IntoJs<'js> for Value<'_> {
 	fn into_js(self, ctx: Ctx<'js>) -> Result<js::Value<'js>, Error> {
 		(&self).into_js(ctx)
 	}
 }
 
-impl<'js> IntoJs<'js> for &Value {
+impl<'js> IntoJs<'js> for &Value<'_> {
 	fn into_js(self, ctx: Ctx<'js>) -> Result<js::Value<'js>, Error> {
 		match self {
 			Value::Null => Null.into_js(ctx),

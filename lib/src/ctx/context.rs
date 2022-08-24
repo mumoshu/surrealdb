@@ -8,14 +8,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-impl<'a> From<Value> for Cow<'a, Value> {
-	fn from(v: Value) -> Cow<'a, Value> {
+impl<'a> From<Value<'a>> for Cow<'a, Value<'a>> {
+	fn from(v: Value<'a>) -> Cow<'a, Value<'a>> {
 		Cow::Owned(v)
 	}
 }
 
-impl<'a> From<&'a Value> for Cow<'a, Value> {
-	fn from(v: &'a Value) -> Cow<'a, Value> {
+impl<'a> From<&'a Value<'a>> for Cow<'a, Value<'a>> {
+	fn from(v: &'a Value<'a>) -> Cow<'a, Value<'a>> {
 		Cow::Borrowed(v)
 	}
 }
@@ -28,7 +28,7 @@ pub struct Context<'a> {
 	// Whether or not this context is cancelled.
 	cancelled: Arc<AtomicBool>,
 	// A collection of read only values stored in this context.
-	values: Option<HashMap<String, Cow<'a, Value>>>,
+	values: Option<HashMap<String, Cow<'a, Value<'a>>>>,
 }
 
 impl<'a> Default for Context<'a> {
@@ -84,7 +84,7 @@ impl<'a> Context<'a> {
 	// with the same key.
 	pub fn add_value<V>(&mut self, key: String, value: V)
 	where
-		V: Into<Cow<'a, Value>>,
+		V: Into<Cow<'a, Value<'a>>>,
 	{
 		if let Some(ref mut values) = self.values {
 			values.insert(key, value.into());

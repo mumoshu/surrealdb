@@ -22,28 +22,28 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct InsertStatement {
+pub struct InsertStatement<'a> {
 	pub into: Table,
-	pub data: Data,
+	pub data: Data<'a>,
 	pub ignore: bool,
-	pub update: Option<Data>,
-	pub output: Option<Output>,
+	pub update: Option<Data<'a>>,
+	pub output: Option<Output<'a>>,
 	pub timeout: Option<Timeout>,
 	pub parallel: bool,
 }
 
-impl InsertStatement {
+impl <'a>InsertStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		true
 	}
 
 	pub(crate) async fn compute(
-		&self,
+		&'a self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -104,7 +104,7 @@ impl InsertStatement {
 	}
 }
 
-impl fmt::Display for InsertStatement {
+impl <'a>fmt::Display for InsertStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "INSERT")?;
 		if self.ignore {

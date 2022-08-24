@@ -19,16 +19,16 @@ use std::ops::Deref;
 use std::str;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Idioms(pub Vec<Idiom>);
+pub struct Idioms<'a>(pub Vec<Idiom<'a>>);
 
-impl Deref for Idioms {
-	type Target = Vec<Idiom>;
+impl <'a>Deref for Idioms<'a> {
+	type Target = Vec<Idiom<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl fmt::Display for Idioms {
+impl <'a>fmt::Display for Idioms<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0.iter().map(|ref v| format!("{}", v)).collect::<Vec<_>>().join(", "))
 	}
@@ -40,28 +40,28 @@ pub fn locals(i: &str) -> IResult<&str, Idioms> {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Idiom(pub Vec<Part>);
+pub struct Idiom<'a>(pub Vec<Part<'a>>);
 
-impl Deref for Idiom {
-	type Target = [Part];
+impl <'a>Deref for Idiom<'a> {
+	type Target = [Part<'a>];
 	fn deref(&self) -> &Self::Target {
 		self.0.as_slice()
 	}
 }
 
-impl From<String> for Idiom {
+impl <'a>From<String> for Idiom<'a> {
 	fn from(v: String) -> Self {
 		Idiom(vec![Part::from(v)])
 	}
 }
 
-impl From<Vec<Part>> for Idiom {
+impl <'a>From<Vec<Part<'a>>> for Idiom<'a> {
 	fn from(v: Vec<Part>) -> Self {
 		Idiom(v)
 	}
 }
 
-impl Idiom {
+impl Idiom<'_> {
 	// Appends a part to the end of this Idiom
 	pub(crate) fn push(mut self, n: Part) -> Idiom {
 		self.0.push(n);
@@ -108,13 +108,13 @@ impl Idiom {
 	}
 }
 
-impl Idiom {
+impl Idiom<'_> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 	) -> Result<Value, Error> {
 		match self.first() {
 			// The first part is a thing record
@@ -138,7 +138,7 @@ impl Idiom {
 	}
 }
 
-impl fmt::Display for Idiom {
+impl fmt::Display for Idiom<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,

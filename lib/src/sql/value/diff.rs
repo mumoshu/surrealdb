@@ -3,7 +3,7 @@ use crate::sql::operation::{Op, Operation};
 use crate::sql::value::Value;
 use std::cmp::min;
 
-impl Value {
+impl Value<'_> {
 	pub fn diff(&self, val: &Value, path: Idiom) -> Vec<Operation> {
 		let mut ops: Vec<Operation> = vec![];
 		match (self, val) {

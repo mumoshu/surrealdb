@@ -17,7 +17,7 @@ impl fmt::Display for Reason {
 	}
 }
 
-impl From<Reason> for Error {
+impl From<Reason> for Error<'_> {
 	fn from(reason: Reason) -> Self {
 		match reason {
 			Reason::Timedout => Error::QueryTimedout,

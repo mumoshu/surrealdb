@@ -3,7 +3,7 @@ use crate::sql::part::Part;
 use crate::sql::value::Value;
 use std::cmp::Ordering;
 
-impl Value {
+impl Value<'_> {
 	pub fn compare(
 		&self,
 		other: &Self,

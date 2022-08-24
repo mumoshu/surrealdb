@@ -6,7 +6,7 @@ use crate::sql::value::Value;
 use surf::Client;
 use surf::Config;
 
-pub async fn head(uri: Strand, opts: impl Into<Object>) -> Result<Value, Error> {
+pub async fn head<'a>(uri: Strand, opts: impl Into<Object<'a>>) -> Result<Value<'a>, Error<'a>> {
 	// Set a default client with no timeout
 	let cli: Client = Config::new().set_timeout(None).try_into().unwrap();
 	// Start a new HEAD request
@@ -28,7 +28,7 @@ pub async fn head(uri: Strand, opts: impl Into<Object>) -> Result<Value, Error> 
 	}
 }
 
-pub async fn get(uri: Strand, opts: impl Into<Object>) -> Result<Value, Error> {
+pub async fn get<'a>(uri: Strand, opts: impl Into<Object<'a>>) -> Result<Value<'a>, Error<'a>> {
 	// Set a default client with no timeout
 	let cli: Client = Config::new().set_timeout(None).try_into().unwrap();
 	// Start a new GET request
@@ -60,7 +60,7 @@ pub async fn get(uri: Strand, opts: impl Into<Object>) -> Result<Value, Error> {
 	}
 }
 
-pub async fn put(uri: Strand, body: Value, opts: impl Into<Object>) -> Result<Value, Error> {
+pub async fn put<'a>(uri: Strand, body: Value<'a>, opts: impl Into<Object<'a>>) -> Result<Value<'a>, Error> {
 	// Set a default client with no timeout
 	let cli: Client = Config::new().set_timeout(None).try_into().unwrap();
 	// Start a new GET request
@@ -94,7 +94,7 @@ pub async fn put(uri: Strand, body: Value, opts: impl Into<Object>) -> Result<Va
 	}
 }
 
-pub async fn post(uri: Strand, body: Value, opts: impl Into<Object>) -> Result<Value, Error> {
+pub async fn post<'a>(uri: Strand, body: Value<'a>, opts: impl Into<Object<'a>>) -> Result<Value<'a>, Error> {
 	// Set a default client with no timeout
 	let cli: Client = Config::new().set_timeout(None).try_into().unwrap();
 	// Start a new GET request
@@ -128,7 +128,7 @@ pub async fn post(uri: Strand, body: Value, opts: impl Into<Object>) -> Result<V
 	}
 }
 
-pub async fn patch(uri: Strand, body: Value, opts: impl Into<Object>) -> Result<Value, Error> {
+pub async fn patch<'a>(uri: Strand, body: Value<'a>, opts: impl Into<Object<'a>>) -> Result<Value<'a>, Error> {
 	// Set a default client with no timeout
 	let cli: Client = Config::new().set_timeout(None).try_into().unwrap();
 	// Start a new GET request
@@ -162,7 +162,7 @@ pub async fn patch(uri: Strand, body: Value, opts: impl Into<Object>) -> Result<
 	}
 }
 
-pub async fn delete(uri: Strand, opts: impl Into<Object>) -> Result<Value, Error> {
+pub async fn delete<'a>(uri: Strand, opts: impl Into<Object<'a>>) -> Result<Value<'a>, Error<'a>> {
 	// Set a default client with no timeout
 	let cli: Client = Config::new().set_timeout(None).try_into().unwrap();
 	// Start a new GET request

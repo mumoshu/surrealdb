@@ -19,7 +19,7 @@ use crate::sql::thing::Thing;
 use crate::sql::value::{Value, Values};
 use futures::future::try_join_all;
 
-type Ops = Vec<(Idiom, Operator, Value)>;
+type Ops<'a> = Vec<(Idiom<'a>, Operator, Value<'a>)>;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum Action {
@@ -33,7 +33,7 @@ impl<'a> Document<'a> {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		// Check events
@@ -248,9 +248,9 @@ impl<'a> Document<'a> {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		act: Action,
-		exp: &Fields,
+		exp: &Fields<'_>,
 	) -> Result<Data, Error> {
 		//
 		let mut ops: Ops = vec![];

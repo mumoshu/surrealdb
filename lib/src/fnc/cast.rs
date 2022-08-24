@@ -3,7 +3,7 @@ use crate::err::Error;
 use crate::sql::number::Number;
 use crate::sql::value::Value;
 
-pub fn run(_: &Context, name: &str, val: Value) -> Result<Value, Error> {
+pub fn run<'a>(_: &Context, name: &str, val: Value<'a>) -> Result<Value<'a>, Error<'a>> {
 	match name {
 		"bool" => bool(val),
 		"int" => int(val),

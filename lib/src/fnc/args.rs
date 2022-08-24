@@ -14,13 +14,13 @@ pub enum Args {
 	OneTwo,
 }
 
-pub fn check(
+pub fn check<'a>(
 	ctx: &Context,
 	name: &str,
-	args: Vec<Value>,
+	args: Vec<Value<'a>>,
 	size: Args,
-	func: fn(&Context, Vec<Value>) -> Result<Value, Error>,
-) -> Result<Value, Error> {
+	func: fn(&Context, Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>>,
+) -> Result<Value<'a>, Error<'a>> {
 	match size {
 		Args::None => match args.len() {
 			0 => func(ctx, args),

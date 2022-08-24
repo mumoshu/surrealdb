@@ -24,7 +24,7 @@ pub mod r#type;
 pub mod util;
 
 // Attempts to run any function
-pub async fn run(ctx: &Context<'_>, name: &str, args: Vec<Value>) -> Result<Value, Error> {
+pub async fn run<'a>(ctx: &Context<'_>, name: &str, args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match name {
 		v if v.starts_with("http") => {
 			// HTTP functions are asynchronous
@@ -38,7 +38,7 @@ pub async fn run(ctx: &Context<'_>, name: &str, args: Vec<Value>) -> Result<Valu
 }
 
 // Attempts to run a synchronous function
-pub fn synchronous(ctx: &Context<'_>, name: &str, args: Vec<Value>) -> Result<Value, Error> {
+pub fn synchronous<'a>(ctx: &Context<'_>, name: &str, args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match name {
 		//
 		"array::combine" => args::check(ctx, name, args, Args::Two, array::combine),
@@ -184,7 +184,7 @@ pub fn synchronous(ctx: &Context<'_>, name: &str, args: Vec<Value>) -> Result<Va
 }
 
 // Attempts to run an asynchronous function
-pub async fn asynchronous(ctx: &Context<'_>, name: &str, args: Vec<Value>) -> Result<Value, Error> {
+pub async fn asynchronous<'a>(ctx: &Context<'_>, name: &str, args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match name {
 		//
 		"http::head" => http::head(ctx, args).await,

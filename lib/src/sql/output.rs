@@ -8,22 +8,22 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Output {
+pub enum Output<'a> {
 	None,
 	Null,
 	Diff,
 	After,
 	Before,
-	Fields(Fields),
+	Fields(Fields<'a>),
 }
 
-impl Default for Output {
-	fn default() -> Output {
+impl <'a>Default for Output<'a> {
+	fn default() -> Output<'a> {
 		Output::None
 	}
 }
 
-impl fmt::Display for Output {
+impl <'a>fmt::Display for Output<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "RETURN ")?;
 		match self {

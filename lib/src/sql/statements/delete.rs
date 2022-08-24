@@ -21,15 +21,15 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct DeleteStatement {
-	pub what: Values,
-	pub cond: Option<Cond>,
-	pub output: Option<Output>,
+pub struct DeleteStatement<'a> {
+	pub what: Values<'a>,
+	pub cond: Option<Cond<'a>>,
+	pub output: Option<Output<'a>>,
 	pub timeout: Option<Timeout>,
 	pub parallel: bool,
 }
 
-impl DeleteStatement {
+impl <'a>DeleteStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		true
 	}
@@ -38,9 +38,9 @@ impl DeleteStatement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -110,7 +110,7 @@ impl DeleteStatement {
 	}
 }
 
-impl fmt::Display for DeleteStatement {
+impl <'a>fmt::Display for DeleteStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "DELETE {}", self.what)?;
 		if let Some(ref v) = self.cond {
@@ -129,7 +129,7 @@ impl fmt::Display for DeleteStatement {
 	}
 }
 
-pub fn delete(i: &str) -> IResult<&str, DeleteStatement> {
+pub fn delete<'a>(i: &'a str) -> IResult<&'a str, DeleteStatement<'a>> {
 	let (i, _) = tag_no_case("DELETE")(i)?;
 	let (i, _) = opt(tuple((shouldbespace, tag_no_case("FROM"))))(i)?;
 	let (i, _) = shouldbespace(i)?;

@@ -1,7 +1,7 @@
 use crate::err::Error;
 
-impl From<js::Error> for Error {
-	fn from(e: js::Error) -> Error {
+impl <'a>From<js::Error> for Error<'a> {
+	fn from<'b>(e: js::Error) -> Error<'b> {
 		match e {
 			js::Error::Exception {
 				message,

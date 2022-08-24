@@ -12,15 +12,15 @@ use crate::sql::dir::Dir;
 use crate::sql::thing::Thing;
 use crate::sql::value::Value;
 
-impl Iterable {
+impl <'a>Iterable<'a> {
 	pub(crate) async fn iterate(
 		self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
-		ite: &mut Iterator,
-	) -> Result<(), Error> {
+		ite: &mut Iterator<'a>,
+	) -> Result<(), Error<'a>> {
 		if ctx.is_ok() {
 			match self {
 				Iterable::Value(v) => {

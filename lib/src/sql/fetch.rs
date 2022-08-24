@@ -9,24 +9,24 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Fetchs(pub Vec<Fetch>);
+pub struct Fetchs<'a>(pub Vec<Fetch<'a>>);
 
-impl Deref for Fetchs {
-	type Target = Vec<Fetch>;
+impl <'a>Deref for Fetchs<'a> {
+	type Target = Vec<Fetch<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl IntoIterator for Fetchs {
-	type Item = Fetch;
+impl <'a>IntoIterator for Fetchs<'a> {
+	type Item = Fetch<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl fmt::Display for Fetchs {
+impl fmt::Display for Fetchs<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -37,16 +37,16 @@ impl fmt::Display for Fetchs {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Fetch(pub Idiom);
+pub struct Fetch<'a>(pub Idiom<'a>);
 
-impl Deref for Fetch {
-	type Target = Idiom;
+impl <'a>Deref for Fetch<'a> {
+	type Target = Idiom<'a>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl fmt::Display for Fetch {
+impl <'a>fmt::Display for Fetch<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0)
 	}

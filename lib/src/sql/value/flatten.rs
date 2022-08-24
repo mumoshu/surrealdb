@@ -1,7 +1,7 @@
 use crate::sql::array::Array;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub fn flatten(self) -> Self {
 		match self {
 			Value::Array(v) => {

@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 /// Specifies the current session information when processing a query.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct Session {
+pub struct Session<'a> {
 	/// The current [`Auth`] information
 	pub au: Arc<Auth>,
 	/// Whether realtime queries are supported
@@ -23,19 +23,19 @@ pub struct Session {
 	/// The currently selected authentication scope
 	pub sc: Option<String>,
 	/// The current scope authentication data
-	pub sd: Option<Value>,
+	pub sd: Option<Value<'a>>,
 }
 
-impl Session {
+impl <'a>Session<'a> {
 	/// Create a session with root authentication
-	pub fn for_kv() -> Session {
+	pub fn for_kv() -> Session<'a> {
 		Session {
 			au: Arc::new(Auth::Kv),
 			..Session::default()
 		}
 	}
 	/// Create a session with namespace authentication
-	pub fn for_ns<S>(ns: S) -> Session
+	pub fn for_ns<S>(ns: S) -> Session<'a>
 	where
 		S: Into<String> + Clone,
 	{
@@ -46,7 +46,7 @@ impl Session {
 		}
 	}
 	/// Create a session with database authentication
-	pub fn for_db<S>(ns: S, db: S) -> Session
+	pub fn for_db<S>(ns: S, db: S) -> Session<'a>
 	where
 		S: Into<String> + Clone,
 	{
@@ -58,7 +58,7 @@ impl Session {
 		}
 	}
 	/// Create a session with scope authentication
-	pub fn for_sc<S>(ns: S, db: S, sc: S) -> Session
+	pub fn for_sc<S>(ns: S, db: S, sc: S) -> Session<'a>
 	where
 		S: Into<String> + Clone,
 	{
@@ -89,7 +89,7 @@ impl Session {
 		self.db.to_owned().map(Arc::new)
 	}
 	/// Convert a session into a runtime
-	pub(crate) fn context<'a>(&self, mut ctx: Context<'a>) -> Context<'a> {
+	pub(crate) fn context(&self, mut ctx: Context<'_>) -> Context<'_> {
 		// Add scope value
 		let key = String::from("scope");
 		let val: Value = self.sc.to_owned().into();

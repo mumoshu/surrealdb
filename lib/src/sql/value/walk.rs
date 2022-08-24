@@ -3,7 +3,7 @@ use crate::sql::part::Next;
 use crate::sql::part::Part;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub fn walk(&self, path: &[Part]) -> Vec<(Idiom, Self)> {
 		self._walk(path, Idiom::default())
 	}

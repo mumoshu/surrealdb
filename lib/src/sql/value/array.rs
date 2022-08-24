@@ -6,13 +6,13 @@ use crate::sql::array::Array;
 use crate::sql::part::Part;
 use crate::sql::value::Value;
 
-impl Value {
+impl Value<'_> {
 	pub async fn array(
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		path: &[Part],
+		txn: &Transaction<'_>,
+		path: &[Part<'_>],
 	) -> Result<(), Error> {
 		let val = Value::from(Array::default());
 		self.set(ctx, opt, txn, path, val).await

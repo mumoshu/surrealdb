@@ -10,7 +10,7 @@ impl<'a> Document<'a> {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		_stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		// Check if forced

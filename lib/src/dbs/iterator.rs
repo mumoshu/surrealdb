@@ -18,40 +18,40 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::mem;
 
-pub enum Iterable {
-	Value(Value),
+pub enum Iterable<'a> {
+	Value(Value<'a>),
 	Table(Table),
 	Thing(Thing),
 	Edges(Edges),
-	Mergeable(Thing, Value),
+	Mergeable(Thing, Value<'a>),
 	Relatable(Thing, Thing, Thing),
 }
 
-pub enum Operable {
-	Value(Value),
-	Mergeable(Value, Value),
-	Relatable(Thing, Value, Thing),
+pub enum Operable<'a> {
+	Value(Value<'a>),
+	Mergeable(Value<'a>, Value<'a>),
+	Relatable(Thing, Value<'a>, Thing),
 }
 
-pub enum Workable {
+pub enum Workable<'a> {
 	Normal,
-	Insert(Value),
+	Insert(Value<'a>),
 	Relate(Thing, Thing),
 }
 
 #[derive(Default)]
-pub struct Iterator {
+pub struct Iterator<'a> {
 	// Iterator status
 	run: Canceller,
 	// Iterator runtime error
-	error: Option<Error>,
+	error: Option<Error<'a>>,
 	// Iterator output results
-	results: Vec<Value>,
+	results: Vec<Value<'a>>,
 	// Iterator input values
-	entries: Vec<Iterable>,
+	entries: Vec<Iterable<'a>>,
 }
 
-impl Iterator {
+impl <'a>Iterator<'a> {
 	// Creates a new iterator
 	pub fn new() -> Self {
 		Self::default()
@@ -67,7 +67,7 @@ impl Iterator {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<Value, Error> {
 		// Log the statement
@@ -102,7 +102,7 @@ impl Iterator {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		if let Some(splits) = stm.split() {
@@ -146,7 +146,7 @@ impl Iterator {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		if let Some(fields) = stm.expr() {
@@ -234,7 +234,7 @@ impl Iterator {
 		&mut self,
 		_ctx: &Context<'_>,
 		_opt: &Options,
-		_txn: &Transaction,
+		_txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		if let Some(orders) = stm.order() {
@@ -273,7 +273,7 @@ impl Iterator {
 		&mut self,
 		_ctx: &Context<'_>,
 		_opt: &Options,
-		_txn: &Transaction,
+		_txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		if let Some(v) = stm.start() {
@@ -287,7 +287,7 @@ impl Iterator {
 		&mut self,
 		_ctx: &Context<'_>,
 		_opt: &Options,
-		_txn: &Transaction,
+		_txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		if let Some(v) = stm.limit() {
@@ -301,7 +301,7 @@ impl Iterator {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		if let Some(fetchs) = stm.fetch() {
@@ -435,10 +435,10 @@ impl Iterator {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 		thg: Option<Thing>,
-		val: Operable,
+		val: Operable<'a>,
 	) {
 		// Check current context
 		if ctx.is_done() {

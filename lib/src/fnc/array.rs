@@ -8,7 +8,7 @@ use crate::sql::array::Union;
 use crate::sql::array::Uniq;
 use crate::sql::value::Value;
 
-pub fn concat(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn concat<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => match args.remove(0) {
 			Value::Array(w) => Ok(v.concat(w).into()),
@@ -18,7 +18,7 @@ pub fn concat(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn combine(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn combine<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => match args.remove(0) {
 			Value::Array(w) => Ok(v.combine(w).into()),
@@ -28,7 +28,7 @@ pub fn combine(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn difference(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn difference<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => match args.remove(0) {
 			Value::Array(w) => Ok(v.difference(w).into()),
@@ -38,14 +38,14 @@ pub fn difference(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn distinct(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn distinct<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => Ok(v.uniq().into()),
 		_ => Ok(Value::None),
 	}
 }
 
-pub fn intersect(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn intersect<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => match args.remove(0) {
 			Value::Array(w) => Ok(v.intersect(w).into()),
@@ -55,14 +55,14 @@ pub fn intersect(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn len(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn len<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => Ok(v.len().into()),
 		_ => Ok(Value::None),
 	}
 }
 
-pub fn sort(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn sort<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => match args.remove(0) {
 			Value::Array(mut v) => match args.remove(0) {
@@ -105,7 +105,7 @@ pub fn sort(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn union(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn union<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.remove(0) {
 		Value::Array(v) => match args.remove(0) {
 			Value::Array(w) => Ok(v.union(w).into()),
@@ -121,7 +121,7 @@ pub mod sort {
 	use crate::err::Error;
 	use crate::sql::value::Value;
 
-	pub fn asc(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn asc<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		match args.remove(0) {
 			Value::Array(mut v) => {
 				v.sort_unstable_by(|a, b| a.cmp(b));
@@ -131,7 +131,7 @@ pub mod sort {
 		}
 	}
 
-	pub fn desc(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn desc<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		match args.remove(0) {
 			Value::Array(mut v) => {
 				v.sort_unstable_by(|a, b| b.cmp(a));

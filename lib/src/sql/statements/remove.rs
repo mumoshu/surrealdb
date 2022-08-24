@@ -34,9 +34,9 @@ impl RemoveStatement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		match self {
 			RemoveStatement::Namespace(ref v) => v.compute(ctx, opt, txn, doc).await,
 			RemoveStatement::Database(ref v) => v.compute(ctx, opt, txn, doc).await,
@@ -95,9 +95,9 @@ impl RemoveNamespaceStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// No need for NS/DB
 		opt.needs(Level::Kv)?;
 		// Allowed to run?
@@ -151,9 +151,9 @@ impl RemoveDatabaseStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected NS?
 		opt.needs(Level::Ns)?;
 		// Allowed to run?
@@ -208,9 +208,9 @@ impl RemoveLoginStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		match self.base {
 			Base::Ns => {
 				// Selected NS?
@@ -287,9 +287,9 @@ impl RemoveTokenStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		match self.base {
 			Base::Ns => {
 				// Selected NS?
@@ -365,9 +365,9 @@ impl RemoveScopeStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -418,9 +418,9 @@ impl RemoveTableStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -471,13 +471,13 @@ pub struct RemoveEventStatement {
 }
 
 impl RemoveEventStatement {
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'a, 'b, 'c, 'd>(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'b>,
+		_doc: Option<&Value<'c>>,
+	) -> Result<Value<'d>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -531,13 +531,13 @@ pub struct RemoveFieldStatement {
 }
 
 impl RemoveFieldStatement {
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'a, 'b, 'c, 'd>(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'b>,
+		_doc: Option<&Value<'c>>,
+	) -> Result<Value<'d>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -591,13 +591,13 @@ pub struct RemoveIndexStatement {
 }
 
 impl RemoveIndexStatement {
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'a, 'b, 'c, 'd>(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'b>,
+		_doc: Option<&Value<'c>>,
+	) -> Result<Value<'d>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?

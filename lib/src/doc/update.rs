@@ -11,7 +11,7 @@ impl<'a> Document<'a> {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<Value, Error> {
 		// Check where clause

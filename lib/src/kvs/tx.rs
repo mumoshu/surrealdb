@@ -24,9 +24,9 @@ use std::ops::Range;
 use std::sync::Arc;
 
 /// A set of undoable updates and requests against a dataset.
-pub struct Transaction {
+pub struct Transaction<'a> {
 	pub(super) inner: Inner,
-	pub(super) cache: Cache,
+	pub(super) cache: Cache<'a>,
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -43,7 +43,7 @@ pub(super) enum Inner {
 	FDB(super::fdb::Transaction),
 }
 
-impl Transaction {
+impl Transaction<'_> {
 	/// Check if transactions is finished.
 	///
 	/// If the transaction has been cancelled or committed,

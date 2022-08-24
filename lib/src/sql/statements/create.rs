@@ -20,15 +20,15 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct CreateStatement {
-	pub what: Values,
-	pub data: Option<Data>,
-	pub output: Option<Output>,
+pub struct CreateStatement<'a> {
+	pub what: Values<'a>,
+	pub data: Option<Data<'a>>,
+	pub output: Option<Output<'a>>,
 	pub timeout: Option<Timeout>,
 	pub parallel: bool,
 }
 
-impl CreateStatement {
+impl <'a>CreateStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		true
 	}
@@ -37,9 +37,9 @@ impl CreateStatement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -107,7 +107,7 @@ impl CreateStatement {
 	}
 }
 
-impl fmt::Display for CreateStatement {
+impl <'a>fmt::Display for CreateStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "CREATE {}", self.what)?;
 		if let Some(ref v) = self.data {

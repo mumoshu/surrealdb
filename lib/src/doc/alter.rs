@@ -13,7 +13,7 @@ impl<'a> Document<'a> {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		// Get the record id

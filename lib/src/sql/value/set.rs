@@ -8,7 +8,7 @@ use crate::sql::value::Value;
 use async_recursion::async_recursion;
 use futures::future::try_join_all;
 
-impl Value {
+impl <'a>Value<'a> {
 	#[cfg_attr(feature = "parallel", async_recursion)]
 	#[cfg_attr(not(feature = "parallel"), async_recursion(?Send))]
 	pub async fn set(

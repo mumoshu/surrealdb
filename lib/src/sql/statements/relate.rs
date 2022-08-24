@@ -29,18 +29,18 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct RelateStatement {
+pub struct RelateStatement<'a> {
 	pub kind: Table,
-	pub from: Value,
-	pub with: Value,
+	pub from: Value<'a>,
+	pub with: Value<'a>,
 	pub uniq: bool,
-	pub data: Option<Data>,
-	pub output: Option<Output>,
+	pub data: Option<Data<'a>>,
+	pub output: Option<Output<'a>>,
 	pub timeout: Option<Timeout>,
 	pub parallel: bool,
 }
 
-impl RelateStatement {
+impl <'a>RelateStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		true
 	}
@@ -49,9 +49,9 @@ impl RelateStatement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -159,7 +159,7 @@ impl RelateStatement {
 	}
 }
 
-impl fmt::Display for RelateStatement {
+impl <'a>fmt::Display for RelateStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "RELATE {} -> {} -> {}", self.from, self.kind, self.with)?;
 		if self.uniq {

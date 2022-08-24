@@ -11,14 +11,14 @@ use std::fmt;
 use std::str;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Permissions {
-	pub select: Permission,
-	pub create: Permission,
-	pub update: Permission,
-	pub delete: Permission,
+pub struct Permissions<'a> {
+	pub select: Permission<'a>,
+	pub create: Permission<'a>,
+	pub update: Permission<'a>,
+	pub delete: Permission<'a>,
 }
 
-impl Permissions {
+impl <'a>Permissions<'a> {
 	pub fn none() -> Self {
 		Permissions {
 			select: Permission::None,
@@ -52,7 +52,7 @@ impl Permissions {
 	}
 }
 
-impl fmt::Display for Permissions {
+impl fmt::Display for Permissions<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "PERMISSIONS")?;
 		if self.is_none() {
@@ -131,19 +131,19 @@ fn specific(i: &str) -> IResult<&str, Permissions> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Permission {
+pub enum Permission<'a> {
 	None,
 	Full,
-	Specific(Value),
+	Specific(Value<'a>),
 }
 
-impl Default for Permission {
+impl <'a>Default for Permission<'a> {
 	fn default() -> Self {
 		Permission::Full
 	}
 }
 
-impl fmt::Display for Permission {
+impl <'a>fmt::Display for Permission<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Permission::None => write!(f, "NONE"),

@@ -7,13 +7,13 @@ use std::time::Duration;
 
 /// The return value when running a query set on the database.
 #[derive(Debug)]
-pub struct Response {
+pub struct Response<'a> {
 	pub sql: Option<String>,
 	pub time: Duration,
-	pub result: Result<Value, Error>,
+	pub result: Result<Value<'a>, Error<'a>>,
 }
 
-impl Response {
+impl <'a>Response<'a> {
 	/// Return the transaction duration as a string
 	pub fn speed(&self) -> String {
 		format!("{:?}", self.time)
@@ -27,8 +27,8 @@ impl Response {
 	}
 }
 
-impl From<Response> for Value {
-	fn from(v: Response) -> Value {
+impl <'a>From<Response<'_>> for Value<'a> {
+	fn from(v: Response) -> Value<'a> {
 		// Get the response speed
 		let time = v.speed();
 		// Get the response status
@@ -65,7 +65,7 @@ impl From<Response> for Value {
 	}
 }
 
-impl Serialize for Response {
+impl Serialize for Response<'_> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,

@@ -36,16 +36,16 @@ use std::ops::Deref;
 use std::time::Duration;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Statements(pub Vec<Statement>);
+pub struct Statements<'a>(pub Vec<Statement<'a>>);
 
-impl Deref for Statements {
-	type Target = Vec<Statement>;
+impl <'a>Deref for Statements<'a> {
+	type Target = Vec<Statement<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl fmt::Display for Statements {
+impl <'a>fmt::Display for Statements<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0.iter().map(|ref v| format!("{};", v)).collect::<Vec<_>>().join("\n"))
 	}
@@ -58,29 +58,29 @@ pub fn statements(i: &str) -> IResult<&str, Statements> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Statement {
+pub enum Statement<'a> {
 	Use(UseStatement),
-	Set(SetStatement),
+	Set(SetStatement<'a>),
 	Info(InfoStatement),
-	Live(LiveStatement),
+	Live(LiveStatement<'a>),
 	Kill(KillStatement),
 	Begin(BeginStatement),
 	Cancel(CancelStatement),
 	Commit(CommitStatement),
-	Output(OutputStatement),
-	Ifelse(IfelseStatement),
-	Select(SelectStatement),
-	Create(CreateStatement),
-	Update(UpdateStatement),
-	Relate(RelateStatement),
-	Delete(DeleteStatement),
-	Insert(InsertStatement),
-	Define(DefineStatement),
+	Output(OutputStatement<'a>),
+	Ifelse(IfelseStatement<'a>),
+	Select(SelectStatement<'a>),
+	Create(CreateStatement<'a>),
+	Update(UpdateStatement<'a>),
+	Relate(RelateStatement<'a>),
+	Delete(DeleteStatement<'a>),
+	Insert(InsertStatement<'a>),
+	Define(DefineStatement<'a>),
 	Remove(RemoveStatement),
 	Option(OptionStatement),
 }
 
-impl Statement {
+impl <'a>Statement<'a> {
 	pub fn timeout(&self) -> Option<Duration> {
 		match self {
 			Statement::Select(v) => v.timeout.as_ref().map(|v| *v.0),
@@ -119,9 +119,9 @@ impl Statement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		match self {
 			Statement::Set(v) => v.compute(ctx, opt, txn, doc).await,
 			Statement::Info(v) => v.compute(ctx, opt, txn, doc).await,
@@ -142,7 +142,7 @@ impl Statement {
 	}
 }
 
-impl fmt::Display for Statement {
+impl fmt::Display for Statement<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Statement::Use(v) => write!(f, "{}", v),

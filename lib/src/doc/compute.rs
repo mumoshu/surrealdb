@@ -14,12 +14,12 @@ impl<'a> Document<'a> {
 	pub(crate) async fn compute(
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
-		chn: Sender<Result<Value, Error>>,
+		chn: Sender<Result<Value<'a>, Error<'a>>>,
 		thg: Option<Thing>,
-		val: Operable,
-	) -> Result<(), Error> {
+		val: Operable<'a>,
+	) -> Result<(), Error<'a>> {
 		// Setup a new workable
 		let ins = match val {
 			Operable::Value(v) => (v, Workable::Normal),

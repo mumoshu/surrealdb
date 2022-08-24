@@ -11,24 +11,24 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Splits(pub Vec<Split>);
+pub struct Splits<'a>(pub Vec<Split<'a>>);
 
-impl Deref for Splits {
-	type Target = Vec<Split>;
+impl <'a>Deref for Splits<'a> {
+	type Target = Vec<Split<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl IntoIterator for Splits {
-	type Item = Split;
+impl <'a>IntoIterator for Splits<'a> {
+	type Item = Split<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl fmt::Display for Splits {
+impl <'a>fmt::Display for Splits<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -39,16 +39,16 @@ impl fmt::Display for Splits {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Split(pub Idiom);
+pub struct Split<'a>(pub Idiom<'a>);
 
-impl Deref for Split {
-	type Target = Idiom;
+impl <'a>Deref for Split<'a> {
+	type Target = Idiom<'a>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl fmt::Display for Split {
+impl <'a>fmt::Display for Split<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0)
 	}

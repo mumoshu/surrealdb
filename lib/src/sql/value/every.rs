@@ -2,7 +2,7 @@ use crate::sql::idiom::Idiom;
 use crate::sql::part::Part;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub fn every(&self) -> Vec<Idiom> {
 		self._every(Idiom::default())
 	}

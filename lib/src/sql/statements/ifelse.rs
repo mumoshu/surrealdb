@@ -13,12 +13,12 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct IfelseStatement {
-	pub exprs: Vec<(Value, Value)>,
-	pub close: Option<Value>,
+pub struct IfelseStatement<'a> {
+	pub exprs: Vec<(Value<'a>, Value<'a>)>,
+	pub close: Option<Value<'a>>,
 }
 
-impl IfelseStatement {
+impl <'a>IfelseStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		for (cond, then) in self.exprs.iter() {
 			if cond.writeable() || then.writeable() {
@@ -32,9 +32,9 @@ impl IfelseStatement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		for (ref cond, ref then) in &self.exprs {
 			let v = cond.compute(ctx, opt, txn, doc).await?;
 			if v.is_truthy() {
@@ -48,7 +48,7 @@ impl IfelseStatement {
 	}
 }
 
-impl fmt::Display for IfelseStatement {
+impl <'a>fmt::Display for IfelseStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -67,7 +67,7 @@ impl fmt::Display for IfelseStatement {
 	}
 }
 
-pub fn ifelse(i: &str) -> IResult<&str, IfelseStatement> {
+pub fn ifelse<'a>(i: &'a str) -> IResult<&'a str, IfelseStatement<'a>> {
 	let (i, exprs) = separated_list0(split, exprs)(i)?;
 	let (i, close) = opt(close)(i)?;
 	let (i, _) = shouldbespace(i)?;
@@ -81,7 +81,7 @@ pub fn ifelse(i: &str) -> IResult<&str, IfelseStatement> {
 	))
 }
 
-fn exprs(i: &str) -> IResult<&str, (Value, Value)> {
+fn exprs<'a>(i: &'a str) -> IResult<&'a str, (Value<'a>, Value<'a>)> {
 	let (i, _) = tag_no_case("IF")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, cond) = value(i)?;
@@ -92,7 +92,7 @@ fn exprs(i: &str) -> IResult<&str, (Value, Value)> {
 	Ok((i, (cond, then)))
 }
 
-fn close(i: &str) -> IResult<&str, Value> {
+fn close<'a>(i: &'a str) -> IResult<&'a str, Value<'a>> {
 	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("ELSE")(i)?;
 	let (i, _) = shouldbespace(i)?;
@@ -100,7 +100,7 @@ fn close(i: &str) -> IResult<&str, Value> {
 	Ok((i, then))
 }
 
-fn split(i: &str) -> IResult<&str, ()> {
+fn split<'a>(i: &'a str) -> IResult<&'a str, ()> {
 	let (i, _) = shouldbespace(i)?;
 	let (i, _) = tag_no_case("ELSE")(i)?;
 	let (i, _) = shouldbespace(i)?;

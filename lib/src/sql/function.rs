@@ -17,21 +17,21 @@ use std::cmp::Ordering;
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Function {
-	Future(Value),
-	Cast(String, Value),
-	Normal(String, Vec<Value>),
-	Script(Script, Vec<Value>),
+pub enum Function<'a> {
+	Future(Value<'a>),
+	Cast(String, Value<'a>),
+	Normal(String, Vec<Value<'a>>),
+	Script(Script, Vec<Value<'a>>),
 }
 
-impl PartialOrd for Function {
+impl <'a>PartialOrd for Function<'a> {
 	#[inline]
 	fn partial_cmp(&self, _: &Self) -> Option<Ordering> {
 		None
 	}
 }
 
-impl Function {
+impl <'a>Function<'a> {
 	// Get function name if applicable
 	pub fn name(&self) -> &str {
 		match self {
@@ -103,13 +103,13 @@ impl Function {
 	}
 }
 
-impl Function {
+impl Function<'_> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 	) -> Result<Value, Error> {
 		match self {
 			Function::Future(v) => match opt.futures {
@@ -151,7 +151,7 @@ impl Function {
 	}
 }
 
-impl fmt::Display for Function {
+impl fmt::Display for Function<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Function::Future(ref e) => write!(f, "<future> {{ {} }}", e),

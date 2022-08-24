@@ -5,13 +5,13 @@ use crate::err::Error;
 use crate::sql::operation::Op;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub async fn patch(
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		val: Value,
+		txn: &Transaction<'_>,
+		val: Value<'_>,
 	) -> Result<(), Error> {
 		for o in val.to_operations()?.into_iter() {
 			match o.op {

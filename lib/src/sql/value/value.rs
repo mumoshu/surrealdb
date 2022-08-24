@@ -56,15 +56,15 @@ use std::borrow::Cow;
 static MATCHER: Lazy<SkimMatcherV2> = Lazy::new(|| SkimMatcherV2::default().ignore_case());
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Values<'a>(pub CowValueVec<'a>);
+pub struct Values<'a>(pub Vec<Value<'a>>);
 
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct CowValueVec<'a>(pub Vec<Cow<'a, Value<'a>>>);
+// #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+// pub struct CowValueVec<'a>(pub Vec<Cow<'a, Value<'a>>>);
 
 impl <'a>Deref for Values<'a> {
 	type Target = Vec<Value<'a>>;
 	fn deref(&self) -> &Self::Target {
-		&self.0
+		&self.0.iter().map(|x| x.into_owned()).collect()
 	}
 }
 
@@ -72,7 +72,7 @@ impl <'a>IntoIterator for Values<'a> {
 	type Item = Value<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
-		self.0.into_iter()
+		self.0.into_iter().map(|x| x.into_owned()).into()
 	}
 }
 
@@ -84,17 +84,17 @@ impl <'a>fmt::Display for Values<'a> {
 
 pub fn values(i: &str) -> IResult<&str, Values> {
 	let (i, v) = separated_list1(commas, value)(i)?;
-	Ok((i, Values(v)))
+	Ok((i, Values(v.iter().map(Into::into).collect())))
 }
 
 pub fn selects(i: &str) -> IResult<&str, Values> {
 	let (i, v) = separated_list1(commas, select)(i)?;
-	Ok((i, Values(v)))
+	Ok((i, Values(v.iter().map(Into::into).collect())))
 }
 
 pub fn whats(i: &str) -> IResult<&str, Values> {
 	let (i, v) = separated_list1(commas, what)(i)?;
-	Ok((i, Values(v)))
+	Ok((i, Values(v.iter().map(Into::into).collect())))
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Deserialize, Store)]
@@ -108,20 +108,20 @@ pub enum Value<'a> {
 	Duration(Duration),
 	Datetime(Datetime),
 	Uuid(Uuid),
-	Array(&'a Array<'a>),
-	Object(Object),
+	Array(Array<'a>),
+	Object(Object<'a>),
 	Geometry(Geometry),
 	// ---
-	Param(Param),
-	Idiom(Idiom),
+	Param(Param<'a>),
+	Idiom(Idiom<'a>),
 	Table(Table),
 	Thing(Thing),
 	Model(Model),
 	Regex(Regex),
 	Edges(Box<Edges>),
-	Function(Box<Function>),
-	Subquery(Box<Subquery>),
-	Expression(Box<Expression>),
+	Function(Box<Function<'a>>),
+	Subquery(Box<Subquery<'a>>),
+	Expression(Box<Expression<'a>>),
 }
 
 impl <'a>Eq for Value<'a> {}
@@ -153,13 +153,13 @@ impl <'a>From<Uuid> for Value<'a> {
 	}
 }
 
-impl <'a>From<Param> for Value<'a> {
+impl <'a>From<Param<'a>> for Value<'a> {
 	fn from(v: Param) -> Self {
 		Value::Param(v)
 	}
 }
 
-impl <'a>From<Idiom> for Value<'a> {
+impl <'a>From<Idiom<'a>> for Value<'a> {
 	fn from(v: Idiom) -> Self {
 		Value::Idiom(v)
 	}
@@ -190,12 +190,12 @@ impl <'a>From<Regex> for Value<'a> {
 }
 
 impl <'a>From<Array<'a>> for Value<'a> {
-	fn from(v: &Array<'a>) -> Self {
+	fn from(v: Array<'a>) -> Self {
 		Value::Array(v)
 	}
 }
 
-impl <'a>From<Object> for Value<'a> {
+impl <'a>From<Object<'_>> for Value<'a> {
 	fn from(v: Object) -> Self {
 		Value::Object(v)
 	}
@@ -237,19 +237,19 @@ impl <'a>From<Edges> for Value<'a> {
 	}
 }
 
-impl <'a>From<Function> for Value<'a> {
+impl <'a>From<Function<'a>> for Value<'a> {
 	fn from(v: Function) -> Self {
 		Value::Function(Box::new(v))
 	}
 }
 
-impl <'a>From<Subquery> for Value<'a> {
+impl <'a>From<Subquery<'a>> for Value<'a> {
 	fn from(v: Subquery) -> Self {
 		Value::Subquery(Box::new(v))
 	}
 }
 
-impl <'a>From<Expression> for Value<'a> {
+impl <'a>From<Expression<'a>> for Value<'a> {
 	fn from(v: Expression) -> Self {
 		Value::Expression(Box::new(v))
 	}
@@ -369,7 +369,7 @@ impl <'a>From<Point<f64>> for Value<'a> {
 	}
 }
 
-impl <'a>From<Operation> for Value<'a> {
+impl <'a>From<Operation<'a>> for Value<'a> {
 	fn from(v: Operation) -> Self {
 		Value::Object(Object::from(v))
 	}
@@ -377,25 +377,25 @@ impl <'a>From<Operation> for Value<'a> {
 
 impl <'a>From<Vec<&str>> for Value<'a> {
 	fn from(v: Vec<&str>) -> Self {
-		Value::Array(&Array::from(v))
+		Value::Array(Array::from(v))
 	}
 }
 
 impl <'a>From<Vec<i32>> for Value<'a> {
 	fn from(v: Vec<i32>) -> Self {
-		Value::Array(&Array::from(v))
+		Value::Array(Array::from(v))
 	}
 }
 
 impl <'a>From<Vec<Value<'a>>> for Value<'a> {
 	fn from(v: Vec<Value>) -> Self {
-		Value::Array(&Array::from(v))
+		Value::Array(Array::from(v))
 	}
 }
 
-impl <'a>From<Vec<Operation>> for Value<'a> {
+impl <'a>From<Vec<Operation<'a>>> for Value<'a> {
 	fn from(v: Vec<Operation>) -> Self {
-		Value::Array(&Array::from(v))
+		Value::Array(Array::from(v))
 	}
 }
 
@@ -438,8 +438,8 @@ impl <'a>From<Id> for Value<'a> {
 	}
 }
 
-impl <'a>FromIterator<Response> for Vec<Value<'a>> {
-	fn from_iter<I: IntoIterator<Item = Response>>(iter: I) -> Self {
+impl <'a>FromIterator<Response<'a>> for Vec<Value<'a>> {
+	fn from_iter<I: IntoIterator<Item = Response<'a>>>(iter: I) -> Self {
 		let mut c: Vec<Value> = vec![];
 		for i in iter {
 			c.push(i.into())
@@ -461,7 +461,7 @@ impl <'a>Value<'a> {
 	// Builtin types
 	// -----------------------------------
 
-	pub fn ok(self) -> Result<Value<'a>, Error> {
+	pub fn ok(self) -> Result<Value<'a>, Error<'a>> {
 		Ok(self)
 	}
 

@@ -15,29 +15,29 @@ use std::ops::Deref;
 use std::str;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Param(pub Idiom);
+pub struct Param<'a>(pub Idiom<'a>);
 
-impl From<Idiom> for Param {
+impl <'a>From<Idiom<'a>> for Param<'a> {
 	fn from(p: Idiom) -> Param {
 		Param(p)
 	}
 }
 
-impl Deref for Param {
-	type Target = Idiom;
+impl <'a>Deref for Param<'a> {
+	type Target = Idiom<'a>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl Param {
+impl <'a>Param<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error<'a>> {
 		// Find a base variable by name
 		match self.first() {
 			// The first part will be a field
@@ -76,7 +76,7 @@ impl Param {
 	}
 }
 
-impl fmt::Display for Param {
+impl <'a>fmt::Display for Param<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "${}", &self.0)
 	}

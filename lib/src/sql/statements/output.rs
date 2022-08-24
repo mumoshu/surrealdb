@@ -11,11 +11,11 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct OutputStatement {
-	pub what: Value,
+pub struct OutputStatement<'a> {
+	pub what: Value<'a>,
 }
 
-impl OutputStatement {
+impl <'a>OutputStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		self.what.writeable()
 	}
@@ -24,9 +24,9 @@ impl OutputStatement {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'a>>,
+	) -> Result<Value<'a>, Error> {
 		// Ensure futures are processed
 		let opt = &opt.futures(true);
 		// Process the output value
@@ -34,13 +34,13 @@ impl OutputStatement {
 	}
 }
 
-impl fmt::Display for OutputStatement {
+impl <'a>fmt::Display for OutputStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "RETURN {}", self.what)
 	}
 }
 
-pub fn output(i: &str) -> IResult<&str, OutputStatement> {
+pub fn output<'a>(i: &'a str) -> IResult<&'a str, OutputStatement<'a>> {
 	let (i, _) = tag_no_case("RETURN")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, v) = value(i)?;

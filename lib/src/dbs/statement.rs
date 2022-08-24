@@ -19,45 +19,45 @@ use std::fmt;
 
 #[derive(Clone, Debug)]
 pub enum Statement<'a> {
-	Select(&'a SelectStatement),
-	Create(&'a CreateStatement),
-	Update(&'a UpdateStatement),
-	Relate(&'a RelateStatement),
-	Delete(&'a DeleteStatement),
-	Insert(&'a InsertStatement),
+	Select(&'a SelectStatement<'a>),
+	Create(&'a CreateStatement<'a>),
+	Update(&'a UpdateStatement<'a>),
+	Relate(&'a RelateStatement<'a>),
+	Delete(&'a DeleteStatement<'a>),
+	Insert(&'a InsertStatement<'a>),
 }
 
-impl<'a> From<&'a SelectStatement> for Statement<'a> {
+impl<'a> From<&'a SelectStatement<'a>> for Statement<'a> {
 	fn from(v: &'a SelectStatement) -> Self {
 		Statement::Select(v)
 	}
 }
 
-impl<'a> From<&'a CreateStatement> for Statement<'a> {
+impl<'a> From<&'a CreateStatement<'a>> for Statement<'a> {
 	fn from(v: &'a CreateStatement) -> Self {
 		Statement::Create(v)
 	}
 }
 
-impl<'a> From<&'a UpdateStatement> for Statement<'a> {
+impl<'a> From<&'a UpdateStatement<'a>> for Statement<'a> {
 	fn from(v: &'a UpdateStatement) -> Self {
 		Statement::Update(v)
 	}
 }
 
-impl<'a> From<&'a RelateStatement> for Statement<'a> {
+impl<'a> From<&'a RelateStatement<'a>> for Statement<'a> {
 	fn from(v: &'a RelateStatement) -> Self {
 		Statement::Relate(v)
 	}
 }
 
-impl<'a> From<&'a DeleteStatement> for Statement<'a> {
+impl<'a> From<&'a DeleteStatement<'a>> for Statement<'a> {
 	fn from(v: &'a DeleteStatement) -> Self {
 		Statement::Delete(v)
 	}
 }
 
-impl<'a> From<&'a InsertStatement> for Statement<'a> {
+impl<'a> From<&'a InsertStatement<'_>> for Statement<'a> {
 	fn from(v: &'a InsertStatement) -> Self {
 		Statement::Insert(v)
 	}

@@ -13,23 +13,23 @@ use std::char;
 #[rustfmt::skip] static LATITUDE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$").unwrap());
 #[rustfmt::skip] static LONGITUDE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$").unwrap());
 
-pub fn alphanum(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn alphanum<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(args.remove(0).as_string().chars().all(char::is_alphanumeric).into())
 }
 
-pub fn alpha(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn alpha<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(args.remove(0).as_string().chars().all(char::is_alphabetic).into())
 }
 
-pub fn ascii(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn ascii<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(args.remove(0).as_string().chars().all(|x| char::is_ascii(&x)).into())
 }
 
-pub fn domain(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn domain<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(DOMAIN_RE.is_match(args.remove(0).as_string().as_str()).into())
 }
 
-pub fn email(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn email<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	// Convert to a String
 	let val = args.remove(0).as_string();
 	// Convert to a &str
@@ -56,26 +56,26 @@ pub fn email(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	Ok(Value::True)
 }
 
-pub fn hexadecimal(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn hexadecimal<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(args.remove(0).as_string().chars().all(|x| char::is_ascii_hexdigit(&x)).into())
 }
 
-pub fn latitude(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn latitude<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(LATITUDE_RE.is_match(args.remove(0).as_string().as_str()).into())
 }
 
-pub fn longitude(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn longitude<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(LONGITUDE_RE.is_match(args.remove(0).as_string().as_str()).into())
 }
 
-pub fn numeric(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn numeric<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(args.remove(0).as_string().chars().all(char::is_numeric).into())
 }
 
-pub fn semver(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn semver<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(SEMVER_RE.is_match(args.remove(0).as_string().as_str()).into())
 }
 
-pub fn uuid(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn uuid<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(UUID_RE.is_match(args.remove(0).as_string().as_str()).into())
 }

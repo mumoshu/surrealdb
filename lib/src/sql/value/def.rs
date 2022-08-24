@@ -6,12 +6,12 @@ use crate::sql::paths::ID;
 use crate::sql::thing::Thing;
 use crate::sql::value::Value;
 
-impl Value {
+impl Value<'_> {
 	pub async fn def(
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		val: &Thing,
 	) -> Result<(), Error> {
 		self.set(ctx, opt, txn, ID.as_ref(), val.clone().into()).await

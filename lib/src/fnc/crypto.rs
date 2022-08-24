@@ -7,7 +7,7 @@ use sha1::Sha1;
 use sha2::Sha256;
 use sha2::Sha512;
 
-pub fn md5(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn md5<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	let mut hasher = Md5::new();
 	hasher.update(args.remove(0).as_string().as_str());
 	let val = hasher.finalize();
@@ -15,7 +15,7 @@ pub fn md5(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	Ok(val.into())
 }
 
-pub fn sha1(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn sha1<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	let mut hasher = Sha1::new();
 	hasher.update(args.remove(0).as_string().as_str());
 	let val = hasher.finalize();
@@ -23,7 +23,7 @@ pub fn sha1(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	Ok(val.into())
 }
 
-pub fn sha256(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn sha256<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	let mut hasher = Sha256::new();
 	hasher.update(args.remove(0).as_string().as_str());
 	let val = hasher.finalize();
@@ -31,7 +31,7 @@ pub fn sha256(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	Ok(val.into())
 }
 
-pub fn sha512(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn sha512<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	let mut hasher = Sha512::new();
 	hasher.update(args.remove(0).as_string().as_str());
 	let val = hasher.finalize();
@@ -50,7 +50,7 @@ pub mod argon2 {
 	};
 	use rand::rngs::OsRng;
 
-	pub fn cmp(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn cmp<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		let algo = Argon2::default();
 		let hash = args.remove(0).as_string();
 		let pass = args.remove(0).as_string();
@@ -58,7 +58,7 @@ pub mod argon2 {
 		Ok(algo.verify_password(pass.as_ref(), &test).is_ok().into())
 	}
 
-	pub fn gen(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn gen<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		let algo = Argon2::default();
 		let pass = args.remove(0).as_string();
 		let salt = SaltString::generate(&mut OsRng);
@@ -78,14 +78,14 @@ pub mod pbkdf2 {
 	};
 	use rand::rngs::OsRng;
 
-	pub fn cmp(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn cmp<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		let hash = args.remove(0).as_string();
 		let pass = args.remove(0).as_string();
 		let test = PasswordHash::new(&hash).unwrap();
 		Ok(Pbkdf2.verify_password(pass.as_ref(), &test).is_ok().into())
 	}
 
-	pub fn gen(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn gen<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		let pass = args.remove(0).as_string();
 		let salt = SaltString::generate(&mut OsRng);
 		let hash = Pbkdf2.hash_password(pass.as_ref(), salt.as_ref()).unwrap().to_string();
@@ -104,14 +104,14 @@ pub mod scrypt {
 		Scrypt,
 	};
 
-	pub fn cmp(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn cmp<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		let hash = args.remove(0).as_string();
 		let pass = args.remove(0).as_string();
 		let test = PasswordHash::new(&hash).unwrap();
 		Ok(Scrypt.verify_password(pass.as_ref(), &test).is_ok().into())
 	}
 
-	pub fn gen(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn gen<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		let pass = args.remove(0).as_string();
 		let salt = SaltString::generate(&mut OsRng);
 		let hash = Scrypt.hash_password(pass.as_ref(), salt.as_ref()).unwrap().to_string();

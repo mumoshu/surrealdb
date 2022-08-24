@@ -5,7 +5,7 @@ use crate::sql::table::Table;
 use crate::sql::thing::Thing;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub fn retable(&self, val: &Table) -> Result<Thing, Error> {
 		// Fetch the id from the document
 		let id = match self.pick(&*ID) {

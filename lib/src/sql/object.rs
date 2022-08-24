@@ -46,7 +46,7 @@ impl <'a>From<Option<Object<'a>>> for Object<'a> {
 	}
 }
 
-impl <'a>From<Operation> for Object<'a> {
+impl <'a>From<Operation<'_>> for Object<'a> {
 	fn from(v: Operation) -> Self {
 		Object(map! {
 			String::from("op") => match v.op {
@@ -119,9 +119,9 @@ impl <'a>Object<'a> {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value<'a>>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		let mut x = BTreeMap::new();
 		for (k, v) in self.iter() {
 			match v.compute(ctx, opt, txn, doc).await {

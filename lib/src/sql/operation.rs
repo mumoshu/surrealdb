@@ -3,10 +3,10 @@ use crate::sql::value::Value;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Operation {
+pub struct Operation<'a> {
 	pub op: Op,
-	pub path: Idiom,
-	pub value: Value,
+	pub path: Idiom<'a>,
+	pub value: Value<'a>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -24,7 +24,7 @@ impl Default for Op {
 	}
 }
 
-impl From<&Value> for Op {
+impl From<&Value<'_>> for Op {
 	fn from(v: &Value) -> Self {
 		match v.to_strand().as_str() {
 			"add" => Op::Add,

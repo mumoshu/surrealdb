@@ -12,25 +12,25 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Data {
+pub enum Data<'a> {
 	EmptyExpression,
-	SetExpression(Vec<(Idiom, Operator, Value)>),
-	PatchExpression(Value),
-	MergeExpression(Value),
-	ReplaceExpression(Value),
-	ContentExpression(Value),
-	SingleExpression(Value),
-	ValuesExpression(Vec<Vec<(Idiom, Value)>>),
-	UpdateExpression(Vec<(Idiom, Operator, Value)>),
+	SetExpression(Vec<(Idiom<'a>, Operator, Value<'a>)>),
+	PatchExpression(Value<'a>),
+	MergeExpression(Value<'a>),
+	ReplaceExpression(Value<'a>),
+	ContentExpression(Value<'a>),
+	SingleExpression(Value<'a>),
+	ValuesExpression(Vec<Vec<(Idiom<'a>, Value<'a>)>>),
+	UpdateExpression(Vec<(Idiom<'a>, Operator, Value<'a>)>),
 }
 
-impl Default for Data {
-	fn default() -> Data {
+impl <'a>Default for Data<'a> {
+	fn default() -> Data<'a> {
 		Data::EmptyExpression
 	}
 }
 
-impl fmt::Display for Data {
+impl <'a>fmt::Display for Data<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Data::EmptyExpression => write!(f, ""),

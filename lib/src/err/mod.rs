@@ -7,7 +7,7 @@ use thiserror::Error;
 
 /// An error originating from the SurrealDB client library.
 #[derive(Error, Debug)]
-pub enum Error {
+pub enum Error<'a> {
 	/// This error is used for ignoring a document when processing a query
 	#[doc(hidden)]
 	#[error("Conditional clause is not truthy")]
@@ -223,7 +223,7 @@ pub enum Error {
 	#[error("Found '{value}' for field '{field}' but field must conform to: {check}")]
 	FieldValue {
 		value: String,
-		field: Idiom,
+		field: Idiom<'a>,
 		check: String,
 	},
 
@@ -254,15 +254,15 @@ pub enum Error {
 	Decode(#[from] DecodeError),
 }
 
-impl From<Error> for String {
+impl From<Error<'_>> for String {
 	fn from(e: Error) -> String {
 		e.to_string()
 	}
 }
 
 #[cfg(feature = "kv-echodb")]
-impl From<echodb::err::Error> for Error {
-	fn from(e: echodb::err::Error) -> Error {
+impl <'a>From<echodb::err::Error> for Error<'a> {
+	fn from(e: echodb::err::Error) -> Error<'a> {
 		match e {
 			echodb::err::Error::KeyAlreadyExists => Error::TxKeyAlreadyExists,
 			_ => Error::Tx(e.to_string()),
@@ -271,8 +271,8 @@ impl From<echodb::err::Error> for Error {
 }
 
 #[cfg(feature = "kv-indxdb")]
-impl From<indxdb::err::Error> for Error {
-	fn from(e: indxdb::err::Error) -> Error {
+impl <'a>From<indxdb::err::Error> for Error<'a> {
+	fn from(e: indxdb::err::Error) -> Error<'a> {
 		match e {
 			indxdb::err::Error::KeyAlreadyExists => Error::TxKeyAlreadyExists,
 			_ => Error::Tx(e.to_string()),
@@ -281,8 +281,8 @@ impl From<indxdb::err::Error> for Error {
 }
 
 #[cfg(feature = "kv-tikv")]
-impl From<tikv::Error> for Error {
-	fn from(e: tikv::Error) -> Error {
+impl <'a>From<tikv::Error> for Error<'a> {
+	fn from(e: tikv::Error) -> Error<'a> {
 		match e {
 			tikv::Error::DuplicateKeyInsertion => Error::TxKeyAlreadyExists,
 			_ => Error::Tx(e.to_string()),
@@ -290,26 +290,26 @@ impl From<tikv::Error> for Error {
 	}
 }
 
-impl From<channel::RecvError> for Error {
-	fn from(e: channel::RecvError) -> Error {
+impl <'a>From<channel::RecvError> for Error<'a> {
+	fn from(e: channel::RecvError) -> Error<'a> {
 		Error::Channel(e.to_string())
 	}
 }
 
-impl<T> From<channel::SendError<T>> for Error {
-	fn from(e: channel::SendError<T>) -> Error {
+impl<'a, T> From<channel::SendError<T>> for Error<'a> {
+	fn from(e: channel::SendError<T>) -> Error<'a> {
 		Error::Channel(e.to_string())
 	}
 }
 
 #[cfg(feature = "http")]
-impl From<surf::Error> for Error {
-	fn from(e: surf::Error) -> Error {
+impl <'a>From<surf::Error> for Error<'a> {
+	fn from(e: surf::Error) -> Error<'a> {
 		Error::Http(e.to_string())
 	}
 }
 
-impl Serialize for Error {
+impl <'a>Serialize for Error<'a> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,

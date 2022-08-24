@@ -22,22 +22,22 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct LiveStatement {
+pub struct LiveStatement<'a> {
 	pub id: Uuid,
-	pub expr: Fields,
-	pub what: Value,
-	pub cond: Option<Cond>,
-	pub fetch: Option<Fetchs>,
+	pub expr: Fields<'a>,
+	pub what: Value<'a>,
+	pub cond: Option<Cond<'a>>,
+	pub fetch: Option<Fetchs<'a>>,
 }
 
-impl LiveStatement {
+impl <'a>LiveStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		// Allowed to run?
 		opt.realtime()?;
 		// Selected DB?
@@ -65,11 +65,11 @@ impl LiveStatement {
 			}
 		};
 		// Return the query id
-		Ok(self.id.clone().into())
+		Ok(self.id.into())
 	}
 }
 
-impl fmt::Display for LiveStatement {
+impl <'a>fmt::Display for LiveStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "LIVE SELECT {} FROM {}", self.expr, self.what)?;
 		if let Some(ref v) = self.cond {

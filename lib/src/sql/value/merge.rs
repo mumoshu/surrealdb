@@ -5,13 +5,13 @@ use crate::err::Error;
 use crate::sql::part::Part;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub async fn merge(
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		val: Value,
+		txn: &Transaction<'_>,
+		val: Value<'_>,
 	) -> Result<(), Error> {
 		match val {
 			Value::Object(v) => {

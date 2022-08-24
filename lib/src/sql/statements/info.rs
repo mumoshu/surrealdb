@@ -24,13 +24,13 @@ pub enum InfoStatement {
 }
 
 impl InfoStatement {
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'a>(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		// Allowed to run?
 		match self {
 			InfoStatement::Kv => {

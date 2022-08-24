@@ -11,14 +11,14 @@ use std::fmt;
 use std::str;
 
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Expression {
-	pub l: Value,
+pub struct Expression<'a> {
+	pub l: Value<'a>,
 	pub o: Operator,
-	pub r: Value,
+	pub r: Value<'a>,
 }
 
-impl Default for Expression {
-	fn default() -> Expression {
+impl <'a>Default for Expression<'a> {
+	fn default() -> Expression<'a> {
 		Expression {
 			l: Value::Null,
 			o: Operator::default(),
@@ -27,9 +27,9 @@ impl Default for Expression {
 	}
 }
 
-impl Expression {
+impl <'a>Expression<'a> {
 	// Create a new expression
-	fn new(l: Value, o: Operator, r: Value) -> Expression {
+	fn new(l: Value, o: Operator, r: Value) -> Expression<'a> {
 		Expression {
 			l,
 			o,
@@ -56,13 +56,13 @@ impl Expression {
 	}
 }
 
-impl Expression {
+impl Expression<'_> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 	) -> Result<Value, Error> {
 		let l = self.l.compute(ctx, opt, txn, doc).await?;
 		match self.o {
@@ -116,7 +116,7 @@ impl Expression {
 	}
 }
 
-impl fmt::Display for Expression {
+impl fmt::Display for Expression<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{} {} {}", self.l, self.o, self.r)
 	}

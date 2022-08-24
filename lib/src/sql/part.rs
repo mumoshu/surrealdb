@@ -16,73 +16,73 @@ use std::fmt;
 use std::str;
 
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub enum Part {
+pub enum Part<'a> {
 	Any,
 	All,
 	Last,
 	First,
 	Field(Ident),
 	Index(Number),
-	Where(Value),
+	Where(Value<'a>),
 	Thing(Thing),
-	Graph(Graph),
+	Graph(Graph<'a>),
 }
 
-impl From<i32> for Part {
+impl <'a>From<i32> for Part<'a> {
 	fn from(v: i32) -> Self {
 		Part::Index(v.into())
 	}
 }
 
-impl From<isize> for Part {
+impl <'a>From<isize> for Part<'a> {
 	fn from(v: isize) -> Self {
 		Part::Index(v.into())
 	}
 }
 
-impl From<usize> for Part {
+impl <'a>From<usize> for Part<'a> {
 	fn from(v: usize) -> Self {
 		Part::Index(v.into())
 	}
 }
 
-impl From<Number> for Part {
+impl <'a>From<Number> for Part<'a> {
 	fn from(v: Number) -> Self {
 		Part::Index(v)
 	}
 }
 
-impl From<Ident> for Part {
+impl <'a>From<Ident> for Part<'a> {
 	fn from(v: Ident) -> Self {
 		Part::Field(v)
 	}
 }
 
-impl From<Value> for Part {
+impl <'a>From<Value<'a>> for Part<'a> {
 	fn from(v: Value) -> Self {
 		Part::Where(v)
 	}
 }
 
-impl From<Thing> for Part {
+impl <'a>From<Thing> for Part<'a> {
 	fn from(v: Thing) -> Self {
 		Part::Thing(v)
 	}
 }
 
-impl From<Graph> for Part {
+impl <'a>From<Graph<'a>> for Part<'a> {
 	fn from(v: Graph) -> Self {
 		Part::Graph(v)
 	}
 }
 
-impl From<String> for Part {
+impl <'a>From<String> for Part<'a> {
 	fn from(v: String) -> Self {
 		Part::Field(Ident(v))
 	}
 }
 
-impl From<&str> for Part {
+impl <'a>From<&str> for Part<'a> {
 	fn from(v: &str) -> Self {
 		match v.parse::<isize>() {
 			Ok(v) => Part::from(v),
@@ -91,7 +91,7 @@ impl From<&str> for Part {
 	}
 }
 
-impl Part {
+impl <'a>Part<'a> {
 	// Returns a yield if an alias is specified
 	pub(crate) fn alias(&self) -> Option<&Idiom> {
 		match self {
@@ -101,7 +101,7 @@ impl Part {
 	}
 }
 
-impl fmt::Display for Part {
+impl <'a>fmt::Display for Part<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Part::Any => write!(f, ".."),
@@ -123,7 +123,7 @@ pub trait Next<'a> {
 	fn next(&'a self) -> &[Part];
 }
 
-impl<'a> Next<'a> for &'a [Part] {
+impl<'a> Next<'a> for &'a [Part<'a>] {
 	fn next(&'a self) -> &'a [Part] {
 		match self.len() {
 			0 => &[],

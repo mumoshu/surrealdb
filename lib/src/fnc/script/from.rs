@@ -12,7 +12,7 @@ use js::Error;
 use js::FromAtom;
 use js::FromJs;
 
-impl<'js> FromJs<'js> for Value {
+impl<'js> FromJs<'js> for Value<'_> {
 	fn from_js(ctx: Ctx<'js>, val: js::Value<'js>) -> Result<Self, Error> {
 		match val {
 			val if val.type_name() == "null" => Ok(Value::Null),

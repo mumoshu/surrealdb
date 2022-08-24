@@ -9,7 +9,7 @@ pub mod email {
 	#[rustfmt::skip] static USER_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+\z").unwrap());
 	#[rustfmt::skip] static HOST_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$",).unwrap());
 
-	pub fn domain(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn domain<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Check if value is empty
@@ -34,7 +34,7 @@ pub mod email {
 		Ok(parts[0].into())
 	}
 
-	pub fn user(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn user<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Check if value is empty
@@ -67,7 +67,7 @@ pub mod url {
 	use crate::sql::value::Value;
 	use url::Url;
 
-	pub fn domain(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn domain<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Parse the URL
@@ -80,7 +80,7 @@ pub mod url {
 		}
 	}
 
-	pub fn fragment(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn fragment<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Parse the URL
@@ -93,7 +93,7 @@ pub mod url {
 		}
 	}
 
-	pub fn host(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn host<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Parse the URL
@@ -106,7 +106,7 @@ pub mod url {
 		}
 	}
 
-	pub fn path(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn path<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Parse the URL
@@ -116,7 +116,7 @@ pub mod url {
 		}
 	}
 
-	pub fn port(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn port<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Parse the URL
@@ -129,7 +129,7 @@ pub mod url {
 		}
 	}
 
-	pub fn query(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+	pub fn query<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 		// Convert to a String
 		let val = args.remove(0).as_string();
 		// Parse the URL

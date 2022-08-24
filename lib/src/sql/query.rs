@@ -8,16 +8,16 @@ use std::ops::Deref;
 use std::str;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct Query(pub Statements);
+pub struct Query<'a>(pub Statements<'a>);
 
-impl Deref for Query {
-	type Target = Vec<Statement>;
+impl <'a>Deref for Query<'a> {
+	type Target = Vec<Statement<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0 .0
 	}
 }
 
-impl fmt::Display for Query {
+impl <'a>fmt::Display for Query<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0)
 	}

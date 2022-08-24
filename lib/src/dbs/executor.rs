@@ -17,7 +17,7 @@ use trice::Instant;
 pub struct Executor<'a> {
 	err: bool,
 	kvs: &'a Datastore,
-	txn: Option<Transaction>,
+	txn: Option<Transaction<'a>>,
 }
 
 impl<'a> Executor<'a> {
@@ -119,7 +119,7 @@ impl<'a> Executor<'a> {
 		&mut self,
 		mut ctx: Context<'_>,
 		mut opt: Options,
-		qry: Query,
+		qry: Query<'_>,
 	) -> Result<Vec<Response>, Error> {
 		// Initialise buffer of responses
 		let mut buf: Vec<Response> = vec![];

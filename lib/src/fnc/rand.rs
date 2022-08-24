@@ -8,15 +8,15 @@ use nanoid::nanoid;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 
-pub fn rand(_: &Context, _: Vec<Value>) -> Result<Value, Error> {
+pub fn rand<'a>(_: &Context, _: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(rand::random::<f64>().into())
 }
 
-pub fn bool(_: &Context, _: Vec<Value>) -> Result<Value, Error> {
+pub fn bool<'a>(_: &Context, _: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(rand::random::<bool>().into())
 }
 
-pub fn r#enum(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn r#enum<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		0 => Ok(Value::None),
 		1 => match args.remove(0) {
@@ -36,7 +36,7 @@ pub fn r#enum(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn float(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn float<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => {
 			let min = args.remove(0).as_float();
@@ -50,7 +50,7 @@ pub fn float(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn guid(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn guid<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		1 => {
 			let len = args.remove(0).as_int() as usize;
@@ -61,7 +61,7 @@ pub fn guid(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn int(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn int<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => {
 			let min = args.remove(0).as_int();
@@ -75,7 +75,7 @@ pub fn int(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn string(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn string<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => match args.remove(0).as_int() {
 			min if min >= 0 => match args.remove(0).as_int() {
@@ -123,7 +123,7 @@ pub fn string(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn time(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
+pub fn time<'a>(_: &Context, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => {
 			let min = args.remove(0).as_int();
@@ -146,6 +146,6 @@ pub fn time(_: &Context, mut args: Vec<Value>) -> Result<Value, Error> {
 	}
 }
 
-pub fn uuid(_: &Context, _: Vec<Value>) -> Result<Value, Error> {
+pub fn uuid<'a>(_: &Context, _: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	Ok(Uuid::new().into())
 }

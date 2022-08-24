@@ -13,15 +13,15 @@ use async_recursion::async_recursion;
 use futures::future::try_join_all;
 use std::borrow::Cow;
 
-impl Value {
+impl <'a>Value<'a> {
 	#[cfg_attr(feature = "parallel", async_recursion)]
 	#[cfg_attr(not(feature = "parallel"), async_recursion(?Send))]
-	pub async fn get<'a>(
+	pub async fn get(
 		&'a self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		path: &[Part],
+		txn: &Transaction<'_>,
+		path: &[Part<'_>],
 	) -> Result<Cow<'a, Self>, Error> {
 		match path.first() {
 			// Get the current path part
@@ -118,7 +118,7 @@ impl Value {
 										from: val,
 										dir: g.dir.clone(),
 										what: g.what.clone(),
-									})]),
+									}).into()]),
 									cond: g.cond.clone(),
 									..SelectStatement::default()
 								};
@@ -148,7 +148,7 @@ impl Value {
 							_ => {
 								let stm = SelectStatement {
 									expr: Fields(vec![Field::All]),
-									what: Values(vec![Value::from(val)]),
+									what: Values(vec![Value::from(val).into()]),
 									..SelectStatement::default()
 								};
 								let x = stm.compute(ctx, opt, txn, None).await?;

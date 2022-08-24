@@ -4,12 +4,12 @@ use crate::dbs::Transaction;
 use crate::err::Error;
 use crate::sql::value::Value;
 
-impl Value {
+impl Value<'_> {
 	pub async fn clear(
 		&mut self,
 		_ctx: &Context<'_>,
 		_opt: &Options,
-		_txn: &Transaction,
+		_txn: &Transaction<'_>,
 	) -> Result<(), Error> {
 		*self = Value::base();
 		Ok(())

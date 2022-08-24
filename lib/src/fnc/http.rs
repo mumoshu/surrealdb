@@ -33,7 +33,7 @@ pub async fn delete(_: &Context<'_>, _: Vec<Value>) -> Result<Value, Error> {
 }
 
 #[cfg(feature = "http")]
-pub async fn head(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> {
+pub async fn head<'a>(_: &Context<'_>, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => match args.remove(0) {
 			Value::Strand(uri) => match args.remove(0) {
@@ -63,7 +63,7 @@ pub async fn head(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error>
 }
 
 #[cfg(feature = "http")]
-pub async fn get(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> {
+pub async fn get<'a>(_: &Context<'_>, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => match args.remove(0) {
 			Value::Strand(uri) => match args.remove(0) {
@@ -93,7 +93,7 @@ pub async fn get(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> 
 }
 
 #[cfg(feature = "http")]
-pub async fn put(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> {
+pub async fn put<'a>(_: &Context<'_>, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		3 => match (args.remove(0), args.remove(0)) {
 			(Value::Strand(uri), val) => match args.remove(0) {
@@ -130,7 +130,7 @@ pub async fn put(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> 
 }
 
 #[cfg(feature = "http")]
-pub async fn post(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> {
+pub async fn post<'a>(_: &Context<'_>, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		3 => match (args.remove(0), args.remove(0)) {
 			(Value::Strand(uri), val) => match args.remove(0) {
@@ -167,7 +167,7 @@ pub async fn post(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error>
 }
 
 #[cfg(feature = "http")]
-pub async fn patch(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> {
+pub async fn patch<'a>(_: &Context<'_>, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		3 => match (args.remove(0), args.remove(0)) {
 			(Value::Strand(uri), val) => match args.remove(0) {
@@ -204,7 +204,7 @@ pub async fn patch(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error
 }
 
 #[cfg(feature = "http")]
-pub async fn delete(_: &Context<'_>, mut args: Vec<Value>) -> Result<Value, Error> {
+pub async fn delete<'a>(_: &Context<'_>, mut args: Vec<Value<'a>>) -> Result<Value<'a>, Error<'a>> {
 	match args.len() {
 		2 => match args.remove(0) {
 			Value::Strand(uri) => match args.remove(0) {

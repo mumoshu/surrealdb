@@ -20,25 +20,25 @@ use std::cmp::Ordering;
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Subquery {
-	Value(Value),
-	Ifelse(IfelseStatement),
-	Select(SelectStatement),
-	Create(CreateStatement),
-	Update(UpdateStatement),
-	Delete(DeleteStatement),
-	Relate(RelateStatement),
-	Insert(InsertStatement),
+pub enum Subquery<'a> {
+	Value(Value<'a>),
+	Ifelse(IfelseStatement<'a>),
+	Select(SelectStatement<'a>),
+	Create(CreateStatement<'a>),
+	Update(UpdateStatement<'a>),
+	Delete(DeleteStatement<'a>),
+	Relate(RelateStatement<'a>),
+	Insert(InsertStatement<'a>),
 }
 
-impl PartialOrd for Subquery {
+impl <'a>PartialOrd for Subquery<'a> {
 	#[inline]
 	fn partial_cmp(&self, _: &Self) -> Option<Ordering> {
 		None
 	}
 }
 
-impl Subquery {
+impl <'a>Subquery<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		match self {
 			Subquery::Value(v) => v.writeable(),
@@ -56,9 +56,9 @@ impl Subquery {
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		match self {
 			Subquery::Value(ref v) => v.compute(ctx, opt, txn, doc).await,
 			Subquery::Ifelse(ref v) => v.compute(ctx, opt, txn, doc).await,
@@ -183,7 +183,7 @@ impl Subquery {
 	}
 }
 
-impl fmt::Display for Subquery {
+impl <'a>fmt::Display for Subquery<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Subquery::Value(v) => write!(f, "({})", v),

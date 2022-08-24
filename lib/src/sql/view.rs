@@ -11,14 +11,14 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct View {
-	pub expr: Fields,
+pub struct View<'a> {
+	pub expr: Fields<'a>,
 	pub what: Tables,
-	pub cond: Option<Cond>,
-	pub group: Option<Groups>,
+	pub cond: Option<Cond<'a>>,
+	pub group: Option<Groups<'a>>,
 }
 
-impl fmt::Display for View {
+impl <'a>fmt::Display for View<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "AS SELECT {} FROM {}", self.expr, self.what)?;
 		if let Some(ref v) = self.cond {

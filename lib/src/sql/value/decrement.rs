@@ -6,14 +6,14 @@ use crate::sql::number::Number;
 use crate::sql::part::Part;
 use crate::sql::value::Value;
 
-impl Value {
+impl Value<'_> {
 	pub async fn decrement(
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		path: &[Part],
-		val: Value,
+		txn: &Transaction<'_>,
+		path: &[Part<'_>],
+		val: Value<'_>,
 	) -> Result<(), Error> {
 		match self.get(ctx, opt, txn, path).await?.into_owned() {
 			Value::Number(v) => match val {

@@ -11,12 +11,12 @@ use js::Promise;
 use js::Rest;
 use js::This;
 
-pub async fn run(
+pub async fn run<'a>(
 	ctx: &Context<'_>,
-	doc: Option<&Value>,
+	doc: Option<&Value<'a>>,
 	src: &str,
-	arg: Vec<Value>,
-) -> Result<Value, Error> {
+	arg: Vec<Value<'a>>,
+) -> Result<Value<'a>, Error<'a>> {
 	// Check the context
 	if ctx.is_done() {
 		return Ok(Value::None);

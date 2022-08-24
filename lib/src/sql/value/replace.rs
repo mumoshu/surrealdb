@@ -4,13 +4,13 @@ use crate::dbs::Transaction;
 use crate::err::Error;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub async fn replace(
 		&mut self,
 		_ctx: &Context<'_>,
 		_opt: &Options,
-		_txn: &Transaction,
-		val: Value,
+		_txn: &Transaction<'_>,
+		val: Value<'_>,
 	) -> Result<(), Error> {
 		// Clear all entries
 		match val {

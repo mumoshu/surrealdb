@@ -20,7 +20,7 @@ pub struct Transaction {
 
 impl Datastore {
 	// Open a new database
-	pub async fn new() -> Result<Datastore, Error> {
+	pub async fn new<'a>() -> Result<Datastore, Error<'a>> {
 		Ok(Datastore {
 			db: echodb::db::new(),
 		})

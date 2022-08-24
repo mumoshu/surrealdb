@@ -21,27 +21,27 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct UpdateStatement {
-	pub what: Values,
-	pub data: Option<Data>,
-	pub cond: Option<Cond>,
-	pub output: Option<Output>,
+pub struct UpdateStatement<'a> {
+	pub what: Values<'a>,
+	pub data: Option<Data<'a>>,
+	pub cond: Option<Cond<'a>>,
+	pub output: Option<Output<'a>>,
 	pub timeout: Option<Timeout>,
 	pub parallel: bool,
 }
 
-impl UpdateStatement {
+impl <'a>UpdateStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		true
 	}
 
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'b>(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'b>,
+		doc: Option<&Value<'a>>,
+	) -> Result<Value<'a>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -111,7 +111,7 @@ impl UpdateStatement {
 	}
 }
 
-impl fmt::Display for UpdateStatement {
+impl <'a>fmt::Display for UpdateStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "UPDATE {}", self.what)?;
 		if let Some(ref v) = self.data {

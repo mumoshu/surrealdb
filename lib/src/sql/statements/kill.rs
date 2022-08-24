@@ -18,13 +18,13 @@ pub struct KillStatement {
 }
 
 impl KillStatement {
-	pub(crate) async fn compute(
-		&self,
+	pub(crate) async fn compute<'a>(
+		&'a self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		// Allowed to run?
 		opt.realtime()?;
 		// Selected DB?

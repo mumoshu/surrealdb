@@ -12,15 +12,15 @@ use crate::sql::thing::Thing;
 use crate::sql::value::Value;
 use channel::Sender;
 
-impl Iterable {
+impl <'a>Iterable<'a> {
 	pub(crate) async fn channel(
 		self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		_stm: &Statement<'_>,
-		chn: Sender<(Option<Thing>, Operable)>,
-	) -> Result<(), Error> {
+		chn: Sender<(Option<Thing>, Operable<'a>)>,
+	) -> Result<(), Error<'a>> {
 		if ctx.is_ok() {
 			match self {
 				Iterable::Value(v) => {

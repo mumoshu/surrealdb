@@ -33,26 +33,26 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub enum DefineStatement {
+pub enum DefineStatement<'a> {
 	Namespace(DefineNamespaceStatement),
 	Database(DefineDatabaseStatement),
 	Login(DefineLoginStatement),
 	Token(DefineTokenStatement),
-	Scope(DefineScopeStatement),
-	Table(DefineTableStatement),
-	Event(DefineEventStatement),
-	Field(DefineFieldStatement),
-	Index(DefineIndexStatement),
+	Scope(DefineScopeStatement<'a>),
+	Table(DefineTableStatement<'a>),
+	Event(DefineEventStatement<'a>),
+	Field(DefineFieldStatement<'a>),
+	Index(DefineIndexStatement<'a>),
 }
 
-impl DefineStatement {
+impl <'a>DefineStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		match self {
 			DefineStatement::Namespace(ref v) => v.compute(ctx, opt, txn, doc).await,
 			DefineStatement::Database(ref v) => v.compute(ctx, opt, txn, doc).await,
@@ -67,7 +67,7 @@ impl DefineStatement {
 	}
 }
 
-impl fmt::Display for DefineStatement {
+impl <'a>fmt::Display for DefineStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			DefineStatement::Namespace(v) => write!(f, "{}", v),
@@ -111,9 +111,9 @@ impl DefineNamespaceStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// No need for NS/DB
 		opt.needs(Level::Kv)?;
 		// Allowed to run?
@@ -160,9 +160,9 @@ impl DefineDatabaseStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected NS?
 		opt.needs(Level::Ns)?;
 		// Allowed to run?
@@ -217,9 +217,9 @@ impl DefineLoginStatement {
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		match self.base {
 			Base::Ns => {
 				// Selected DB?
@@ -342,13 +342,13 @@ pub struct DefineTokenStatement {
 }
 
 impl DefineTokenStatement {
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'a>(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		match self.base {
 			Base::Ns => {
 				// Selected DB?
@@ -435,22 +435,22 @@ fn token(i: &str) -> IResult<&str, DefineTokenStatement> {
 // --------------------------------------------------
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct DefineScopeStatement {
+pub struct DefineScopeStatement<'a> {
 	pub name: Ident,
 	pub code: String,
 	pub session: Option<Duration>,
-	pub signup: Option<Value>,
-	pub signin: Option<Value>,
+	pub signup: Option<Value<'a>>,
+	pub signin: Option<Value<'a>>,
 }
 
-impl DefineScopeStatement {
+impl <'a>DefineScopeStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -469,7 +469,7 @@ impl DefineScopeStatement {
 	}
 }
 
-impl fmt::Display for DefineScopeStatement {
+impl <'a>fmt::Display for DefineScopeStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "DEFINE SCOPE {}", self.name)?;
 		if let Some(ref v) = self.session {
@@ -518,10 +518,10 @@ fn scope(i: &str) -> IResult<&str, DefineScopeStatement> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum DefineScopeOption {
+pub enum DefineScopeOption<'a> {
 	Session(Duration),
-	Signup(Value),
-	Signin(Value),
+	Signup(Value<'a>),
+	Signin(Value<'a>),
 }
 
 fn scope_opts(i: &str) -> IResult<&str, DefineScopeOption> {
@@ -557,22 +557,22 @@ fn scope_signin(i: &str) -> IResult<&str, DefineScopeOption> {
 // --------------------------------------------------
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct DefineTableStatement {
+pub struct DefineTableStatement<'a> {
 	pub name: Ident,
 	pub drop: bool,
 	pub full: bool,
-	pub view: Option<View>,
-	pub permissions: Permissions,
+	pub view: Option<View<'a>>,
+	pub permissions: Permissions<'a>,
 }
 
-impl DefineTableStatement {
+impl <'a>DefineTableStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -616,7 +616,7 @@ impl DefineTableStatement {
 	}
 }
 
-impl fmt::Display for DefineTableStatement {
+impl <'a>fmt::Display for DefineTableStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "DEFINE TABLE {}", self.name)?;
 		if self.drop {
@@ -680,12 +680,12 @@ fn table(i: &str) -> IResult<&str, DefineTableStatement> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum DefineTableOption {
+pub enum DefineTableOption<'a> {
 	Drop,
-	View(View),
+	View(View<'a>),
 	Schemaless,
 	Schemafull,
-	Permissions(Permissions),
+	Permissions(Permissions<'a>),
 }
 
 fn table_opts(i: &str) -> IResult<&str, DefineTableOption> {
@@ -727,21 +727,21 @@ fn table_permissions(i: &str) -> IResult<&str, DefineTableOption> {
 // --------------------------------------------------
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct DefineEventStatement {
+pub struct DefineEventStatement<'a> {
 	pub name: Ident,
 	pub what: Ident,
-	pub when: Value,
-	pub then: Values,
+	pub when: Value<'a>,
+	pub then: Values<'a>,
 }
 
-impl DefineEventStatement {
+impl <'a>DefineEventStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -761,7 +761,7 @@ impl DefineEventStatement {
 	}
 }
 
-impl fmt::Display for DefineEventStatement {
+impl <'a>fmt::Display for DefineEventStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -806,23 +806,23 @@ fn event(i: &str) -> IResult<&str, DefineEventStatement> {
 // --------------------------------------------------
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct DefineFieldStatement {
-	pub name: Idiom,
+pub struct DefineFieldStatement<'a> {
+	pub name: Idiom<'a>,
 	pub what: Ident,
 	pub kind: Option<Kind>,
-	pub value: Option<Value>,
-	pub assert: Option<Value>,
-	pub permissions: Permissions,
+	pub value: Option<Value<'a>>,
+	pub assert: Option<Value<'a>>,
+	pub permissions: Permissions<'a>,
 }
 
-impl DefineFieldStatement {
+impl <'a>DefineFieldStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		_ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		_doc: Option<&Value<'_>>,
+	) -> Result<Value<'_>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -842,7 +842,7 @@ impl DefineFieldStatement {
 	}
 }
 
-impl fmt::Display for DefineFieldStatement {
+impl <'a>fmt::Display for DefineFieldStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "DEFINE FIELD {} ON {}", self.name, self.what)?;
 		if let Some(ref v) = self.kind {
@@ -902,11 +902,11 @@ fn field(i: &str) -> IResult<&str, DefineFieldStatement> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum DefineFieldOption {
+pub enum DefineFieldOption<'a> {
 	Kind(Kind),
-	Value(Value),
-	Assert(Value),
-	Permissions(Permissions),
+	Value(Value<'a>),
+	Assert(Value<'a>),
+	Permissions(Permissions<'a>),
 }
 
 fn field_opts(i: &str) -> IResult<&str, DefineFieldOption> {
@@ -948,21 +948,21 @@ fn field_permissions(i: &str) -> IResult<&str, DefineFieldOption> {
 // --------------------------------------------------
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct DefineIndexStatement {
+pub struct DefineIndexStatement<'a> {
 	pub name: Ident,
 	pub what: Ident,
-	pub cols: Idioms,
+	pub cols: Idioms<'a>,
 	pub uniq: bool,
 }
 
-impl DefineIndexStatement {
+impl <'a>DefineIndexStatement<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
+	) -> Result<Value<'a>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -994,7 +994,7 @@ impl DefineIndexStatement {
 	}
 }
 
-impl fmt::Display for DefineIndexStatement {
+impl fmt::Display for DefineIndexStatement<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "DEFINE INDEX {} ON {} FIELDS {}", self.name, self.what, self.cols)?;
 		if self.uniq {

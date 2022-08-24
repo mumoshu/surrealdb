@@ -16,9 +16,9 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Fields(pub Vec<Field>);
+pub struct Fields<'a>(pub Vec<Field<'a>>);
 
-impl Fields {
+impl <'a>Fields<'a> {
 	pub fn all(&self) -> bool {
 		self.0.iter().any(|v| matches!(v, Field::All))
 	}
@@ -38,34 +38,34 @@ impl Fields {
 	}
 }
 
-impl Deref for Fields {
-	type Target = Vec<Field>;
+impl <'a>Deref for Fields<'a> {
+	type Target = Vec<Field<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl IntoIterator for Fields {
-	type Item = Field;
+impl <'a>IntoIterator for Fields<'a> {
+	type Item = Field<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl fmt::Display for Fields {
+impl fmt::Display for Fields<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0.iter().map(|ref v| format!("{}", v)).collect::<Vec<_>>().join(", "))
 	}
 }
 
-impl Fields {
+impl Fields<'_> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
+		txn: &Transaction<'_>,
+		doc: Option<&Value<'_>>,
 		group: bool,
 	) -> Result<Value, Error> {
 		// Ensure futures are run
@@ -191,19 +191,19 @@ pub fn fields(i: &str) -> IResult<&str, Fields> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub enum Field {
+pub enum Field<'a> {
 	All,
-	Alone(Value),
-	Alias(Value, Idiom),
+	Alone(Value<'a>),
+	Alias(Value<'a>, Idiom<'a>),
 }
 
-impl Default for Field {
-	fn default() -> Field {
+impl <'a>Default for Field<'a> {
+	fn default() -> Field<'a> {
 		Field::All
 	}
 }
 
-impl fmt::Display for Field {
+impl <'a>fmt::Display for Field<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Field::All => write!(f, "*"),

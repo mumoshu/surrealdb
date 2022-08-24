@@ -11,24 +11,24 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Groups(pub Vec<Group>);
+pub struct Groups<'a>(pub Vec<Group<'a>>);
 
-impl Deref for Groups {
-	type Target = Vec<Group>;
+impl <'a>Deref for Groups<'a> {
+	type Target = Vec<Group<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl IntoIterator for Groups {
-	type Item = Group;
+impl <'a>IntoIterator for Groups<'a> {
+	type Item = Group<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl fmt::Display for Groups {
+impl <'a>fmt::Display for Groups<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -39,16 +39,16 @@ impl fmt::Display for Groups {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Group(pub Idiom);
+pub struct Group<'a>(pub Idiom<'a>);
 
-impl Deref for Group {
-	type Target = Idiom;
+impl <'a>Deref for Group<'a> {
+	type Target = Idiom<'a>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl fmt::Display for Group {
+impl <'a>fmt::Display for Group<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0)
 	}

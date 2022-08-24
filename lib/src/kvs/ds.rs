@@ -182,8 +182,8 @@ impl Datastore {
 	pub async fn execute(
 		&self,
 		txt: &str,
-		sess: &Session,
-		vars: Variables,
+		sess: &Session<'_>,
+		vars: Variables<'_>,
 		strict: bool,
 	) -> Result<Vec<Response>, Error> {
 		// Create a new query options
@@ -214,9 +214,9 @@ impl Datastore {
 	/// Execute a pre-parsed SQL query
 	pub async fn process(
 		&self,
-		ast: Query,
-		sess: &Session,
-		vars: Variables,
+		ast: Query<'_>,
+		sess: &Session<'_>,
+		vars: Variables<'_>,
 		strict: bool,
 	) -> Result<Vec<Response>, Error> {
 		// Create a new query options
@@ -245,9 +245,9 @@ impl Datastore {
 	/// Execute a pre-parsed SQL query
 	pub async fn compute(
 		&self,
-		val: Value,
-		sess: &Session,
-		vars: Variables,
+		val: Value<'_>,
+		sess: &Session<'_>,
+		vars: Variables<'_>,
 		strict: bool,
 	) -> Result<Value, Error> {
 		// Start a new transaction

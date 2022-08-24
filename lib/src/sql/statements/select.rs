@@ -27,22 +27,22 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct SelectStatement {
-	pub expr: Fields,
-	pub what: Values,
-	pub cond: Option<Cond>,
-	pub split: Option<Splits>,
-	pub group: Option<Groups>,
-	pub order: Option<Orders>,
+pub struct SelectStatement<'a> {
+	pub expr: Fields<'a>,
+	pub what: Values<'a>,
+	pub cond: Option<Cond<'a>>,
+	pub split: Option<Splits<'a>>,
+	pub group: Option<Groups<'a>>,
+	pub order: Option<Orders<'a>>,
 	pub limit: Option<Limit>,
 	pub start: Option<Start>,
-	pub fetch: Option<Fetchs>,
+	pub fetch: Option<Fetchs<'a>>,
 	pub version: Option<Version>,
 	pub timeout: Option<Timeout>,
 	pub parallel: bool,
 }
 
-impl SelectStatement {
+impl <'a>SelectStatement<'a> {
 	/// Return the statement limit number or 0 if not set
 	pub fn limit(&self) -> usize {
 		match self.limit {
@@ -73,13 +73,13 @@ impl SelectStatement {
 		self.cond.as_ref().map_or(false, |v| v.writeable())
 	}
 
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'b>(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'b>,
+		doc: Option<&Value<'a>>,
+	) -> Result<Value<'a>, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -125,7 +125,7 @@ impl SelectStatement {
 	}
 }
 
-impl fmt::Display for SelectStatement {
+impl <'a>fmt::Display for SelectStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "SELECT {} FROM {}", self.expr, self.what)?;
 		if let Some(ref v) = self.cond {

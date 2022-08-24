@@ -2,7 +2,7 @@ use crate::sql::part::Next;
 use crate::sql::part::Part;
 use crate::sql::value::Value;
 
-impl Value {
+impl <'a>Value<'a> {
 	pub fn pick(&self, path: &[Part]) -> Self {
 		match path.first() {
 			// Get the current path part

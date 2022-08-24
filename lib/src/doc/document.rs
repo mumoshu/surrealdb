@@ -14,9 +14,9 @@ use std::sync::Arc;
 
 pub struct Document<'a> {
 	pub(super) id: Option<Thing>,
-	pub(super) extras: Workable,
-	pub(super) current: Cow<'a, Value>,
-	pub(super) initial: Cow<'a, Value>,
+	pub(super) extras: Workable<'a>,
+	pub(super) current: Cow<'a, Value<'a>>,
+	pub(super) initial: Cow<'a, Value<'a>>,
 }
 
 impl<'a> From<&Document<'a>> for Vec<u8> {
@@ -49,7 +49,7 @@ impl<'a> Document<'a> {
 	pub async fn tb(
 		&self,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 	) -> Result<Arc<DefineTableStatement>, Error> {
 		// Clone transaction
 		let run = txn.clone();
@@ -82,7 +82,7 @@ impl<'a> Document<'a> {
 	pub async fn ft(
 		&self,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 	) -> Result<Arc<Vec<DefineTableStatement>>, Error> {
 		// Get the record id
 		let id = self.id.as_ref().unwrap();
@@ -93,7 +93,7 @@ impl<'a> Document<'a> {
 	pub async fn ev(
 		&self,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 	) -> Result<Arc<Vec<DefineEventStatement>>, Error> {
 		// Get the record id
 		let id = self.id.as_ref().unwrap();
@@ -104,7 +104,7 @@ impl<'a> Document<'a> {
 	pub async fn fd(
 		&self,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 	) -> Result<Arc<Vec<DefineFieldStatement>>, Error> {
 		// Get the record id
 		let id = self.id.as_ref().unwrap();
@@ -115,7 +115,7 @@ impl<'a> Document<'a> {
 	pub async fn ix(
 		&self,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 	) -> Result<Arc<Vec<DefineIndexStatement>>, Error> {
 		// Get the record id
 		let id = self.id.as_ref().unwrap();

@@ -14,7 +14,7 @@ impl<'a> Document<'a> {
 		&mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
+		txn: &Transaction<'_>,
 		_stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		// Check if the table is a view

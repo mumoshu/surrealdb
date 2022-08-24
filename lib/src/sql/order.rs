@@ -12,24 +12,24 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Orders(pub Vec<Order>);
+pub struct Orders<'a>(pub Vec<Order<'a>>);
 
-impl Deref for Orders {
-	type Target = Vec<Order>;
+impl <'a>Deref for Orders<'a> {
+	type Target = Vec<Order<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl IntoIterator for Orders {
-	type Item = Order;
+impl <'a>IntoIterator for Orders<'a> {
+	type Item = Order<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl fmt::Display for Orders {
+impl <'a>fmt::Display for Orders<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -40,22 +40,22 @@ impl fmt::Display for Orders {
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Order {
-	pub order: Idiom,
+pub struct Order<'a> {
+	pub order: Idiom<'a>,
 	pub random: bool,
 	pub collate: bool,
 	pub numeric: bool,
 	pub direction: bool,
 }
 
-impl Deref for Order {
-	type Target = Idiom;
+impl <'a>Deref for Order<'a> {
+	type Target = Idiom<'a>;
 	fn deref(&self) -> &Self::Target {
 		&self.order
 	}
 }
 
-impl fmt::Display for Order {
+impl <'a>fmt::Display for Order<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.order)?;
 		if self.random {

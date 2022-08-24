@@ -15,34 +15,34 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Store)]
-pub struct SetStatement {
+pub struct SetStatement<'a> {
 	pub name: String,
-	pub what: Value,
+	pub what: Value<'a>,
 }
 
-impl SetStatement {
+impl <'a>SetStatement<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		self.what.writeable()
 	}
 
-	pub(crate) async fn compute(
+	pub(crate) async fn compute<'b>(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		doc: Option<&Value>,
-	) -> Result<Value, Error> {
+		txn: &Transaction<'b>,
+		doc: Option<&Value<'a>>,
+	) -> Result<Value<'a>, Error> {
 		self.what.compute(ctx, opt, txn, doc).await
 	}
 }
 
-impl fmt::Display for SetStatement {
+impl <'a>fmt::Display for SetStatement<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "LET ${} = {}", self.name, self.what)
 	}
 }
 
-pub fn set(i: &str) -> IResult<&str, SetStatement> {
+pub fn set<'a>(i: &'a str) -> IResult<&'a str, SetStatement<'a>> {
 	let (i, _) = tag_no_case("LET")(i)?;
 	let (i, _) = shouldbespace(i)?;
 	let (i, n) = preceded(char('$'), ident_raw)(i)?;
