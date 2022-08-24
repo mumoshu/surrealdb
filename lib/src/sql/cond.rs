@@ -7,16 +7,16 @@ use std::fmt;
 use std::ops::Deref;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Cond(pub Value);
+pub struct Cond<'a>(pub Value<'a>);
 
-impl Deref for Cond {
-	type Target = Value;
+impl <'a>Deref for Cond<'a> {
+	type Target = Value<'a>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl fmt::Display for Cond {
+impl <'a>fmt::Display for Cond<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "WHERE {}", self.0)
 	}

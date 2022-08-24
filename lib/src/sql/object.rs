@@ -26,27 +26,27 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Deserialize)]
-pub struct Object(pub BTreeMap<String, Value>);
+pub struct Object<'a>(pub BTreeMap<String, Value<'a>>);
 
-impl From<BTreeMap<String, Value>> for Object {
+impl <'a>From<BTreeMap<String, Value<'a>>> for Object<'a> {
 	fn from(v: BTreeMap<String, Value>) -> Self {
 		Object(v)
 	}
 }
 
-impl From<HashMap<String, Value>> for Object {
-	fn from(v: HashMap<String, Value>) -> Self {
+impl <'a>From<HashMap<String, Value<'a>>> for Object<'a> {
+	fn from(v: HashMap<String, Value<'a>>) -> Self {
 		Object(v.into_iter().collect())
 	}
 }
 
-impl From<Option<Object>> for Object {
-	fn from(v: Option<Object>) -> Self {
+impl <'a>From<Option<Object<'a>>> for Object<'a> {
+	fn from(v: Option<Object<'a>>) -> Self {
 		v.unwrap_or_default()
 	}
 }
 
-impl From<Operation> for Object {
+impl <'a>From<Operation> for Object<'a> {
 	fn from(v: Operation) -> Self {
 		Object(map! {
 			String::from("op") => match v.op {
@@ -62,28 +62,28 @@ impl From<Operation> for Object {
 	}
 }
 
-impl Deref for Object {
-	type Target = BTreeMap<String, Value>;
+impl <'a>Deref for Object<'a> {
+	type Target = BTreeMap<String, Value<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl DerefMut for Object {
+impl <'a>DerefMut for Object<'a> {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.0
 	}
 }
 
-impl IntoIterator for Object {
-	type Item = (String, Value);
-	type IntoIter = std::collections::btree_map::IntoIter<String, Value>;
+impl <'a>IntoIterator for Object<'a> {
+	type Item = (String, Value<'a>);
+	type IntoIter = std::collections::btree_map::IntoIter<String, Value<'a>>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl Object {
+impl <'a>Object<'a> {
 	// Fetch the record id if there is one
 	pub fn rid(&self) -> Option<Thing> {
 		match self.get("id") {
@@ -114,13 +114,13 @@ impl Object {
 	}
 }
 
-impl Object {
+impl <'a>Object<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
 		txn: &Transaction,
-		doc: Option<&Value>,
+		doc: Option<&Value<'a>>,
 	) -> Result<Value, Error> {
 		let mut x = BTreeMap::new();
 		for (k, v) in self.iter() {
@@ -133,7 +133,7 @@ impl Object {
 	}
 }
 
-impl fmt::Display for Object {
+impl <'a>fmt::Display for Object<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(
 			f,
@@ -146,7 +146,7 @@ impl fmt::Display for Object {
 	}
 }
 
-impl Serialize for Object {
+impl <'a>Serialize for Object<'a> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,

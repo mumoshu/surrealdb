@@ -51,28 +51,32 @@ use std::iter::FromIterator;
 use std::ops;
 use std::ops::Deref;
 use std::str::FromStr;
+use std::borrow::Cow;
 
 static MATCHER: Lazy<SkimMatcherV2> = Lazy::new(|| SkimMatcherV2::default().ignore_case());
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Values(pub Vec<Value>);
+pub struct Values<'a>(pub CowValueVec<'a>);
 
-impl Deref for Values {
-	type Target = Vec<Value>;
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CowValueVec<'a>(pub Vec<Cow<'a, Value<'a>>>);
+
+impl <'a>Deref for Values<'a> {
+	type Target = Vec<Value<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl IntoIterator for Values {
-	type Item = Value;
+impl <'a>IntoIterator for Values<'a> {
+	type Item = Value<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl fmt::Display for Values {
+impl <'a>fmt::Display for Values<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.0.iter().map(|ref v| format!("{}", v)).collect::<Vec<_>>().join(", "))
 	}
@@ -94,7 +98,7 @@ pub fn whats(i: &str) -> IResult<&str, Values> {
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Deserialize, Store)]
-pub enum Value {
+pub enum Value<'a> {
 	None,
 	Null,
 	False,
@@ -104,7 +108,7 @@ pub enum Value {
 	Duration(Duration),
 	Datetime(Datetime),
 	Uuid(Uuid),
-	Array(Array),
+	Array(&'a Array<'a>),
 	Object(Object),
 	Geometry(Geometry),
 	// ---
@@ -120,21 +124,21 @@ pub enum Value {
 	Expression(Box<Expression>),
 }
 
-impl Eq for Value {}
+impl <'a>Eq for Value<'a> {}
 
-impl Ord for Value {
+impl <'a>Ord for Value<'a> {
 	fn cmp(&self, other: &Self) -> Ordering {
 		self.partial_cmp(other).unwrap_or(Ordering::Equal)
 	}
 }
 
-impl Default for Value {
-	fn default() -> Value {
+impl <'a>Default for Value<'a> {
+	fn default() -> Value<'a> {
 		Value::None
 	}
 }
 
-impl From<bool> for Value {
+impl <'a>From<bool> for Value<'a> {
 	fn from(v: bool) -> Self {
 		match v {
 			true => Value::True,
@@ -143,271 +147,271 @@ impl From<bool> for Value {
 	}
 }
 
-impl From<Uuid> for Value {
+impl <'a>From<Uuid> for Value<'a> {
 	fn from(v: Uuid) -> Self {
 		Value::Uuid(v)
 	}
 }
 
-impl From<Param> for Value {
+impl <'a>From<Param> for Value<'a> {
 	fn from(v: Param) -> Self {
 		Value::Param(v)
 	}
 }
 
-impl From<Idiom> for Value {
+impl <'a>From<Idiom> for Value<'a> {
 	fn from(v: Idiom) -> Self {
 		Value::Idiom(v)
 	}
 }
 
-impl From<Model> for Value {
+impl <'a>From<Model> for Value<'a> {
 	fn from(v: Model) -> Self {
 		Value::Model(v)
 	}
 }
 
-impl From<Table> for Value {
+impl <'a>From<Table> for Value<'a> {
 	fn from(v: Table) -> Self {
 		Value::Table(v)
 	}
 }
 
-impl From<Thing> for Value {
+impl <'a>From<Thing> for Value<'a> {
 	fn from(v: Thing) -> Self {
 		Value::Thing(v)
 	}
 }
 
-impl From<Regex> for Value {
+impl <'a>From<Regex> for Value<'a> {
 	fn from(v: Regex) -> Self {
 		Value::Regex(v)
 	}
 }
 
-impl From<Array> for Value {
-	fn from(v: Array) -> Self {
+impl <'a>From<Array<'a>> for Value<'a> {
+	fn from(v: &Array<'a>) -> Self {
 		Value::Array(v)
 	}
 }
 
-impl From<Object> for Value {
+impl <'a>From<Object> for Value<'a> {
 	fn from(v: Object) -> Self {
 		Value::Object(v)
 	}
 }
 
-impl From<Number> for Value {
+impl <'a>From<Number> for Value<'a> {
 	fn from(v: Number) -> Self {
 		Value::Number(v)
 	}
 }
 
-impl From<Strand> for Value {
+impl <'a>From<Strand> for Value<'a> {
 	fn from(v: Strand) -> Self {
 		Value::Strand(v)
 	}
 }
 
-impl From<Geometry> for Value {
+impl <'a>From<Geometry> for Value<'a> {
 	fn from(v: Geometry) -> Self {
 		Value::Geometry(v)
 	}
 }
 
-impl From<Datetime> for Value {
+impl <'a>From<Datetime> for Value<'a> {
 	fn from(v: Datetime) -> Self {
 		Value::Datetime(v)
 	}
 }
 
-impl From<Duration> for Value {
+impl <'a>From<Duration> for Value<'a> {
 	fn from(v: Duration) -> Self {
 		Value::Duration(v)
 	}
 }
 
-impl From<Edges> for Value {
+impl <'a>From<Edges> for Value<'a> {
 	fn from(v: Edges) -> Self {
 		Value::Edges(Box::new(v))
 	}
 }
 
-impl From<Function> for Value {
+impl <'a>From<Function> for Value<'a> {
 	fn from(v: Function) -> Self {
 		Value::Function(Box::new(v))
 	}
 }
 
-impl From<Subquery> for Value {
+impl <'a>From<Subquery> for Value<'a> {
 	fn from(v: Subquery) -> Self {
 		Value::Subquery(Box::new(v))
 	}
 }
 
-impl From<Expression> for Value {
+impl <'a>From<Expression> for Value<'a> {
 	fn from(v: Expression) -> Self {
 		Value::Expression(Box::new(v))
 	}
 }
 
-impl From<i8> for Value {
+impl <'a>From<i8> for Value<'a> {
 	fn from(v: i8) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<i16> for Value {
+impl <'a>From<i16> for Value<'a> {
 	fn from(v: i16) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<i32> for Value {
+impl <'a>From<i32> for Value<'a> {
 	fn from(v: i32) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<i64> for Value {
+impl <'a>From<i64> for Value<'a> {
 	fn from(v: i64) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<isize> for Value {
+impl <'a>From<isize> for Value<'a> {
 	fn from(v: isize) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<u8> for Value {
+impl <'a>From<u8> for Value<'a> {
 	fn from(v: u8) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<u16> for Value {
+impl <'a>From<u16> for Value<'a> {
 	fn from(v: u16) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<u32> for Value {
+impl <'a>From<u32> for Value<'a> {
 	fn from(v: u32) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<u64> for Value {
+impl <'a>From<u64> for Value<'a> {
 	fn from(v: u64) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<usize> for Value {
+impl <'a>From<usize> for Value<'a> {
 	fn from(v: usize) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<f32> for Value {
+impl <'a>From<f32> for Value<'a> {
 	fn from(v: f32) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<f64> for Value {
+impl <'a>From<f64> for Value<'a> {
 	fn from(v: f64) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<BigDecimal> for Value {
+impl <'a>From<BigDecimal> for Value<'a> {
 	fn from(v: BigDecimal) -> Self {
 		Value::Number(Number::from(v))
 	}
 }
 
-impl From<String> for Value {
+impl <'a>From<String> for Value<'a> {
 	fn from(v: String) -> Self {
 		Value::Strand(Strand::from(v))
 	}
 }
 
-impl From<&str> for Value {
+impl <'a>From<&str> for Value<'a> {
 	fn from(v: &str) -> Self {
 		Value::Strand(Strand::from(v))
 	}
 }
 
-impl From<DateTime<Utc>> for Value {
+impl <'a>From<DateTime<Utc>> for Value<'a> {
 	fn from(v: DateTime<Utc>) -> Self {
 		Value::Datetime(Datetime::from(v))
 	}
 }
 
-impl From<(f64, f64)> for Value {
+impl <'a>From<(f64, f64)> for Value<'a> {
 	fn from(v: (f64, f64)) -> Self {
 		Value::Geometry(Geometry::from(v))
 	}
 }
 
-impl From<[f64; 2]> for Value {
+impl <'a>From<[f64; 2]> for Value<'a> {
 	fn from(v: [f64; 2]) -> Self {
 		Value::Geometry(Geometry::from(v))
 	}
 }
 
-impl From<Point<f64>> for Value {
+impl <'a>From<Point<f64>> for Value<'a> {
 	fn from(v: Point<f64>) -> Self {
 		Value::Geometry(Geometry::from(v))
 	}
 }
 
-impl From<Operation> for Value {
+impl <'a>From<Operation> for Value<'a> {
 	fn from(v: Operation) -> Self {
 		Value::Object(Object::from(v))
 	}
 }
 
-impl From<Vec<&str>> for Value {
+impl <'a>From<Vec<&str>> for Value<'a> {
 	fn from(v: Vec<&str>) -> Self {
-		Value::Array(Array::from(v))
+		Value::Array(&Array::from(v))
 	}
 }
 
-impl From<Vec<i32>> for Value {
+impl <'a>From<Vec<i32>> for Value<'a> {
 	fn from(v: Vec<i32>) -> Self {
-		Value::Array(Array::from(v))
+		Value::Array(&Array::from(v))
 	}
 }
 
-impl From<Vec<Value>> for Value {
+impl <'a>From<Vec<Value<'a>>> for Value<'a> {
 	fn from(v: Vec<Value>) -> Self {
-		Value::Array(Array::from(v))
+		Value::Array(&Array::from(v))
 	}
 }
 
-impl From<Vec<Operation>> for Value {
+impl <'a>From<Vec<Operation>> for Value<'a> {
 	fn from(v: Vec<Operation>) -> Self {
-		Value::Array(Array::from(v))
+		Value::Array(&Array::from(v))
 	}
 }
 
-impl From<HashMap<String, Value>> for Value {
+impl <'a>From<HashMap<String, Value<'a>>> for Value<'a> {
 	fn from(v: HashMap<String, Value>) -> Self {
 		Value::Object(Object::from(v))
 	}
 }
 
-impl From<BTreeMap<String, Value>> for Value {
+impl <'a>From<BTreeMap<String, Value<'a>>> for Value<'a> {
 	fn from(v: BTreeMap<String, Value>) -> Self {
 		Value::Object(Object::from(v))
 	}
 }
 
-impl From<Option<Value>> for Value {
+impl <'a>From<Option<Value<'a>>> for Value<'a> {
 	fn from(v: Option<Value>) -> Self {
 		match v {
 			Some(v) => v,
@@ -416,7 +420,7 @@ impl From<Option<Value>> for Value {
 	}
 }
 
-impl From<Option<String>> for Value {
+impl <'a>From<Option<String>> for Value<'a> {
 	fn from(v: Option<String>) -> Self {
 		match v {
 			Some(v) => Value::from(v),
@@ -425,7 +429,7 @@ impl From<Option<String>> for Value {
 	}
 }
 
-impl From<Id> for Value {
+impl <'a>From<Id> for Value<'a> {
 	fn from(v: Id) -> Self {
 		match v {
 			Id::Number(v) => v.into(),
@@ -434,7 +438,7 @@ impl From<Id> for Value {
 	}
 }
 
-impl FromIterator<Response> for Vec<Value> {
+impl <'a>FromIterator<Response> for Vec<Value<'a>> {
 	fn from_iter<I: IntoIterator<Item = Response>>(iter: I) -> Self {
 		let mut c: Vec<Value> = vec![];
 		for i in iter {
@@ -444,7 +448,7 @@ impl FromIterator<Response> for Vec<Value> {
 	}
 }
 
-impl Value {
+impl <'a>Value<'a> {
 	// -----------------------------------
 	// Initial record value
 	// -----------------------------------
@@ -457,11 +461,11 @@ impl Value {
 	// Builtin types
 	// -----------------------------------
 
-	pub fn ok(self) -> Result<Value, Error> {
+	pub fn ok(self) -> Result<Value<'a>, Error> {
 		Ok(self)
 	}
 
-	pub fn output(self) -> Option<Value> {
+	pub fn output(self) -> Option<Value<'a>> {
 		match self {
 			Value::None => None,
 			_ => Some(self),
@@ -723,63 +727,63 @@ impl Value {
 	// Simple conversion of value
 	// -----------------------------------
 
-	pub fn make_bool(self) -> Value {
+	pub fn make_bool(self) -> Value<'a> {
 		match self {
 			Value::True | Value::False => self,
 			_ => self.is_truthy().into(),
 		}
 	}
 
-	pub fn make_int(self) -> Value {
+	pub fn make_int(self) -> Value<'a> {
 		match self {
 			Value::Number(Number::Int(_)) => self,
 			_ => self.as_int().into(),
 		}
 	}
 
-	pub fn make_float(self) -> Value {
+	pub fn make_float(self) -> Value<'a> {
 		match self {
 			Value::Number(Number::Float(_)) => self,
 			_ => self.as_float().into(),
 		}
 	}
 
-	pub fn make_decimal(self) -> Value {
+	pub fn make_decimal(self) -> Value<'a> {
 		match self {
 			Value::Number(Number::Decimal(_)) => self,
 			_ => self.as_decimal().into(),
 		}
 	}
 
-	pub fn make_number(self) -> Value {
+	pub fn make_number(self) -> Value<'a> {
 		match self {
 			Value::Number(_) => self,
 			_ => self.as_number().into(),
 		}
 	}
 
-	pub fn make_strand(self) -> Value {
+	pub fn make_strand(self) -> Value<'a> {
 		match self {
 			Value::Strand(_) => self,
 			_ => self.as_strand().into(),
 		}
 	}
 
-	pub fn make_datetime(self) -> Value {
+	pub fn make_datetime(self) -> Value<'a> {
 		match self {
 			Value::Datetime(_) => self,
 			_ => self.as_datetime().into(),
 		}
 	}
 
-	pub fn make_duration(self) -> Value {
+	pub fn make_duration(self) -> Value<'a> {
 		match self {
 			Value::Duration(_) => self,
 			_ => self.as_duration().into(),
 		}
 	}
 
-	pub fn make_table(self) -> Value {
+	pub fn make_table(self) -> Value<'a> {
 		match self {
 			Value::Table(_) => self,
 			Value::Strand(v) => Value::Table(Table(v.0)),
@@ -787,7 +791,7 @@ impl Value {
 		}
 	}
 
-	pub fn make_table_or_thing(self) -> Value {
+	pub fn make_table_or_thing(self) -> Value<'a> {
 		match self {
 			Value::Table(_) => self,
 			Value::Thing(_) => self,
@@ -796,7 +800,7 @@ impl Value {
 		}
 	}
 
-	pub fn convert_to(self, kind: &Kind) -> Value {
+	pub fn convert_to(self, kind: &Kind) -> Value<'a> {
 		match kind {
 			Kind::Any => self,
 			Kind::Bool => self.make_bool(),
@@ -1048,7 +1052,7 @@ impl Value {
 	}
 }
 
-impl fmt::Display for Value {
+impl <'a>fmt::Display for Value<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Value::None => write!(f, "NONE"),
@@ -1077,7 +1081,7 @@ impl fmt::Display for Value {
 	}
 }
 
-impl Value {
+impl <'a>Value<'a> {
 	pub(crate) fn writeable(&self) -> bool {
 		match self {
 			Value::Array(v) => v.iter().any(|v| v.writeable()),
@@ -1115,7 +1119,7 @@ impl Value {
 	}
 }
 
-impl Serialize for Value {
+impl <'a>Serialize for Value<'a> {
 	fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
@@ -1166,7 +1170,7 @@ impl Serialize for Value {
 	}
 }
 
-impl ops::Add for Value {
+impl <'a>ops::Add for Value<'a> {
 	type Output = Self;
 	fn add(self, other: Self) -> Self {
 		match (self, other) {
@@ -1180,7 +1184,7 @@ impl ops::Add for Value {
 	}
 }
 
-impl ops::Sub for Value {
+impl <'a>ops::Sub for Value<'a> {
 	type Output = Self;
 	fn sub(self, other: Self) -> Self {
 		match (self, other) {
@@ -1193,7 +1197,7 @@ impl ops::Sub for Value {
 	}
 }
 
-impl ops::Mul for Value {
+impl <'a>ops::Mul for Value<'a> {
 	type Output = Self;
 	fn mul(self, other: Self) -> Self {
 		match (self, other) {
@@ -1203,7 +1207,7 @@ impl ops::Mul for Value {
 	}
 }
 
-impl ops::Div for Value {
+impl <'a>ops::Div for Value<'a> {
 	type Output = Self;
 	fn div(self, other: Self) -> Self {
 		match (self, other) {

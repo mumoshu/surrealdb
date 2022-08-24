@@ -43,7 +43,7 @@ pub struct Index {
 	pub tb: String,
 	_d: u8,
 	pub ix: String,
-	pub fd: Array,
+	pub fd: Array<'static>,
 	pub id: Option<Id>,
 }
 

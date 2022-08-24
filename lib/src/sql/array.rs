@@ -18,62 +18,71 @@ use std::fmt;
 use std::ops;
 use std::ops::Deref;
 use std::ops::DerefMut;
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Deserialize)]
-pub struct Array(pub Vec<Value>);
+pub struct Array<'a>(pub CowValueVec<'a>);
 
-impl From<Value> for Array {
+
+#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Deserialize)]
+pub struct CowValueVec<'a>(pub Vec<Cow<'a, Value<'a>>>);
+
+fn newArray<'a>(v: Vec<Value>) -> Array<'a> {
+	Array(CowValueVec(v.iter().map(|x| Cow::Borrowed(x))))
+}
+
+impl <'a>From<Value<'a>> for Array<'a> {
 	fn from(v: Value) -> Self {
 		Array(vec![v])
 	}
 }
 
-impl From<Vec<Value>> for Array {
+impl <'a>From<Vec<Value<'a>>> for Array<'a> {
 	fn from(v: Vec<Value>) -> Self {
 		Array(v)
 	}
 }
 
-impl From<Vec<i32>> for Array {
+impl <'a>From<Vec<i32>> for Array<'a> {
 	fn from(v: Vec<i32>) -> Self {
 		Array(v.into_iter().map(Value::from).collect())
 	}
 }
 
-impl From<Vec<&str>> for Array {
+impl <'a>From<Vec<&str>> for Array<'a> {
 	fn from(v: Vec<&str>) -> Self {
 		Array(v.into_iter().map(Value::from).collect())
 	}
 }
 
-impl From<Vec<Operation>> for Array {
+impl <'a>From<Vec<Operation>> for Array<'a> {
 	fn from(v: Vec<Operation>) -> Self {
 		Array(v.into_iter().map(Value::from).collect())
 	}
 }
 
-impl Deref for Array {
-	type Target = Vec<Value>;
+impl <'a>Deref for Array<'a> {
+	type Target = Vec<Value<'a>>;
 	fn deref(&self) -> &Self::Target {
 		&self.0
 	}
 }
 
-impl DerefMut for Array {
+impl <'a>DerefMut for Array<'a> {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.0
 	}
 }
 
-impl IntoIterator for Array {
-	type Item = Value;
+impl <'a>IntoIterator for Array<'a> {
+	type Item = Value<'a>;
 	type IntoIter = std::vec::IntoIter<Self::Item>;
 	fn into_iter(self) -> Self::IntoIter {
 		self.0.into_iter()
 	}
 }
 
-impl Array {
+impl <'a>Array<'a> {
 	pub fn new() -> Self {
 		Array(Vec::default())
 	}
@@ -107,13 +116,13 @@ impl Array {
 	}
 }
 
-impl Array {
+impl <'a>Array<'a> {
 	pub(crate) async fn compute(
 		&self,
 		ctx: &Context<'_>,
 		opt: &Options,
 		txn: &Transaction,
-		doc: Option<&Value>,
+		doc: Option<&Value<'a>>,
 	) -> Result<Value, Error> {
 		let mut x = Vec::new();
 		for v in self.iter() {
@@ -122,17 +131,17 @@ impl Array {
 				Err(e) => return Err(e),
 			};
 		}
-		Ok(Value::Array(Array(x)))
+		Ok(Value::Array(&Array(x)))
 	}
 }
 
-impl fmt::Display for Array {
+impl <'a>fmt::Display for Array<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "[{}]", self.iter().map(|ref v| format!("{}", v)).collect::<Vec<_>>().join(", "))
 	}
 }
 
-impl Serialize for Array {
+impl <'a>Serialize for Array<'a> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
@@ -147,7 +156,7 @@ impl Serialize for Array {
 
 // ------------------------------
 
-impl ops::Add<Value> for Array {
+impl <'a>ops::Add<Value<'a>> for Array<'a> {
 	type Output = Self;
 	fn add(mut self, other: Value) -> Self {
 		if !self.0.iter().any(|x| *x == other) {
@@ -157,7 +166,7 @@ impl ops::Add<Value> for Array {
 	}
 }
 
-impl ops::Add for Array {
+impl <'a>ops::Add for Array<'a> {
 	type Output = Self;
 	fn add(mut self, other: Self) -> Self {
 		for v in other.0 {
@@ -171,9 +180,9 @@ impl ops::Add for Array {
 
 // ------------------------------
 
-impl ops::Sub<Value> for Array {
+impl <'a>ops::Sub<Value<'a>> for Array<'a> {
 	type Output = Self;
-	fn sub(mut self, other: Value) -> Self {
+	fn sub(mut self, other: Value<'a>) -> Self {
 		if let Some(p) = self.0.iter().position(|x| *x == other) {
 			self.0.remove(p);
 		}
@@ -181,7 +190,7 @@ impl ops::Sub<Value> for Array {
 	}
 }
 
-impl ops::Sub for Array {
+impl <'a>ops::Sub for Array<'a> {
 	type Output = Self;
 	fn sub(mut self, other: Self) -> Self {
 		for v in other.0 {
@@ -231,7 +240,7 @@ pub trait Combine<T> {
 	fn combine(self, other: T) -> T;
 }
 
-impl Combine<Array> for Array {
+impl <'a>Combine<Array<'a>> for Array<'a> {
 	fn combine(self, other: Array) -> Array {
 		let mut out = Array::new();
 		for a in self.iter() {
@@ -249,7 +258,7 @@ pub trait Concat<T> {
 	fn concat(self, other: T) -> T;
 }
 
-impl Concat<Array> for Array {
+impl <'a>Concat<Array<'a>> for Array<'a> {
 	fn concat(mut self, mut other: Array) -> Array {
 		self.append(&mut other);
 		self
@@ -262,7 +271,7 @@ pub trait Difference<T> {
 	fn difference(self, other: T) -> T;
 }
 
-impl Difference<Array> for Array {
+impl <'a>Difference<Array<'a>> for Array<'a> {
 	fn difference(self, other: Array) -> Array {
 		let mut out = Array::new();
 		let mut other: Vec<_> = other.into_iter().collect();
@@ -284,7 +293,7 @@ pub trait Intersect<T> {
 	fn intersect(self, other: T) -> T;
 }
 
-impl Intersect<Array> for Array {
+impl <'a>Intersect<Array<'a>> for Array<'a> {
 	fn intersect(self, other: Array) -> Array {
 		let mut out = Array::new();
 		let mut other: Vec<_> = other.into_iter().collect();
@@ -304,7 +313,7 @@ pub trait Union<T> {
 	fn union(self, other: T) -> T;
 }
 
-impl Union<Array> for Array {
+impl <'a>Union<Array<'a>> for Array<'a> {
 	fn union(mut self, mut other: Array) -> Array {
 		self.append(&mut other);
 		self.uniq()
@@ -317,8 +326,8 @@ pub trait Uniq<T> {
 	fn uniq(self) -> T;
 }
 
-impl Uniq<Array> for Array {
-	fn uniq(mut self) -> Array {
+impl <'a>Uniq<Array<'a>> for Array<'a> {
+	fn uniq(mut self) -> Array<'a> {
 		for x in (0..self.len()).rev() {
 			for y in (x + 1..self.len()).rev() {
 				if self[x] == self[y] {
