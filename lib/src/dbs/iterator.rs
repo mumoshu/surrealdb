@@ -64,12 +64,12 @@ impl <'a>Iterator<'a> {
 
 	// Process the records and output
 	pub async fn output(
-		&mut self,
+		&'a mut self,
 		ctx: &Context<'_>,
 		opt: &Options,
 		txn: &Transaction<'_>,
 		stm: &Statement<'_>,
-	) -> Result<Value<'_>, Error> {
+	) -> Result<Value<'a>, Error> {
 		// Log the statement
 		trace!(target: LOG, "Iterating: {}", stm);
 		// Enable context override

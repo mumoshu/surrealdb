@@ -36,12 +36,12 @@ impl <'a>UpdateStatement<'a> {
 	}
 
 	pub(crate) async fn compute<'b>(
-		&self,
+		&'a self,
 		ctx: &Context<'_>,
 		opt: &'a Options,
 		txn: &Transaction<'_>,
 		doc: Option<&Value<'_>>,
-	) -> Result<Value<'b>, Error> {
+	) -> Result<Value<'a >, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
@@ -107,7 +107,11 @@ impl <'a>UpdateStatement<'a> {
 		// Assign the statement
 		let stm = Statement::from(self);
 		// Output the results
-		i.output(ctx, opt, txn, &stm).await
+		let x = i.output(ctx, opt, txn, &stm).await;
+		match x {
+			Ok(v) => Ok(v.clone()),
+			Err(e) => Err(e.clone()),
+		}
 	}
 }
 
