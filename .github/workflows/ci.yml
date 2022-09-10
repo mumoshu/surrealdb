@@ -91,7 +91,7 @@ jobs:
 
   build:
     if: startsWith(github.event.ref, 'refs/tags')
-    name: Build ${{ matrix.arch }}
+    name: Build ${{ matrix.file }}
     needs: [test, lint]
     strategy:
       matrix:
@@ -108,6 +108,10 @@ jobs:
             os: ubuntu-latest
             file: surreal-${{ github.ref_name }}.linux-amd64
             opts: --features storage-tikv
+          - arch: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            file: surreal-fdb-${{ github.ref_name }}.linux-amd64
+            opts: --features storage-fdb
           - arch: aarch64-unknown-linux-gnu
             os: ubuntu-latest
             file: surreal-${{ github.ref_name }}.linux-arm64
