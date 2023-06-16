@@ -91,3 +91,7 @@ assets = [
 ]
 extended-description = "A scalable, distributed, collaborative, document-graph database, for the realtime web."
 license-file = ["LICENSE", "4"]
+
+[patch.crates-io]
+tikv = { path = "../tikv-client-rust", package = "tikv-client", optional = true }
+tikv-client-proto = { path = "../tikv-client-rust/tikv-client-proto", package = "tikv-client-proto", optional = true }

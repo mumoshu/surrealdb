@@ -1,9 +1,22 @@
 #![cfg(feature = "kv-mem")]
 
 use crate::err::Error;
+use crate::key::cf;
 use crate::kvs::Key;
 use crate::kvs::Val;
 use std::ops::Range;
+
+use std::ascii::escape_default;
+use std::str;
+
+fn show(bs: &[u8]) -> String {
+    let mut visible = String::new();
+    for &b in bs {
+        let part: Vec<u8> = escape_default(b).collect();
+        visible.push_str(str::from_utf8(&part).unwrap());
+    }
+    visible
+}
 
 pub struct Datastore {
 	db: echodb::Db<Key, Val>,
@@ -101,6 +114,65 @@ impl Transaction {
 		// Return result
 		Ok(res)
 	}
+	/// Obtain a new change timestamp for a key
+	/// which is replaced with the current timestamp when the transaction is committed.
+	/// NOTE: This should be called when composing the change feed entries for this transaction,
+	/// which should be done immediately before the transaction commit.
+	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
+	#[allow(unused)]
+	pub fn get_timestamp<K>(&mut self, key: K) -> Result<cf::Versionstamp, Error>
+	where
+		K: Into<Key>,
+	{
+		// Check to see if transaction is closed
+		if self.ok {
+			return Err(Error::TxFinished);
+		}
+		// Write the timestamp to the "last-write-timestamp" key
+		// to ensure that no other transactions can commit with older timestamps.
+		let k: Key = key.into();
+		let prev = self.tx.get(k.clone())?;
+		let ver = match prev {
+			Some(prev) => {
+				let slice = prev.as_slice();
+				let res: Result<[u8; 10], Error> = match slice.try_into() {
+					Ok(ba) => Ok(ba),
+					Err(e) => Err(Error::Ds(e.to_string())),
+				};
+				let array = res?;
+				let prev = cf::to_u64_be(array);
+				prev + 1
+			}
+			None => {
+				1
+			}
+		};
+
+		let verbytes = cf::u64_to_versionstamp(ver);
+
+		let _x = self.tx.set(k, verbytes.to_vec())?;
+		// Return the uint64 representation of the timestamp as the result
+		Ok(verbytes)
+	}
+	/// Obtain a new key that is suffixed with the change timestamp
+	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>
+	where
+		K: Into<Key>,
+	{
+		let ts_key: Key = ts_key.into();
+		let prefix: Key = prefix.into();
+		let suffix: Key = suffix.into();
+
+		let ts = self.get_timestamp(ts_key.clone())?;
+		let mut k: Vec<u8> = prefix.clone().into();
+		k.append(&mut ts.to_vec());
+		k.append(&mut suffix.clone().into());
+
+		println!("get_versionstamped_key: ts_key={} prefix={} r={} suffix={} k={}", show(ts_key.as_slice()), show(prefix.as_slice()), show(ts.as_slice()), show(suffix.as_slice()), show(k.as_slice()));
+
+		Ok(k)
+	}
+	
 	/// Insert or update a key in the database
 	pub fn set<K, V>(&mut self, key: K, val: V) -> Result<(), Error>
 	where

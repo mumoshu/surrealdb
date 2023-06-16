@@ -1,4 +1,5 @@
 use super::tx::Transaction;
+use crate::cf;
 use crate::ctx::Context;
 use crate::dbs::Attach;
 use crate::dbs::Executor;
@@ -271,6 +272,7 @@ impl Datastore {
 		Ok(Transaction {
 			inner,
 			cache: super::cache::Cache::default(),
+			cf: cf::Writer::new(),
 		})
 	}
 

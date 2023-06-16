@@ -19,6 +19,7 @@ use crate::sql::idiom::{Idiom, Idioms};
 use crate::sql::index::Index;
 use crate::sql::kind::{kind, Kind};
 use crate::sql::permission::{permissions, Permissions};
+use crate::sql::changefeed::{changefeed, ChangeFeed};
 use crate::sql::statements::UpdateStatement;
 use crate::sql::strand::strand_raw;
 use crate::sql::tokenizer::{tokenizers, Tokenizer};
@@ -784,6 +785,7 @@ pub struct DefineTableStatement {
 	pub full: bool,
 	pub view: Option<View>,
 	pub permissions: Permissions,
+	pub changefeed: ChangeFeed,
 }
 
 impl DefineTableStatement {
@@ -904,6 +906,11 @@ fn table(i: &str) -> IResult<&str, DefineTableStatement> {
 					_ => None,
 				})
 				.unwrap_or_default(),
+			changefeed: opts.iter().find_map(|x| match x {
+				DefineTableOption::ChangeFeed(ref v) => Some(v.to_owned()),
+				_ => None,
+			})
+			.unwrap_or_default(),
 		},
 	))
 }
@@ -915,10 +922,11 @@ pub enum DefineTableOption {
 	Schemaless,
 	Schemafull,
 	Permissions(Permissions),
+	ChangeFeed(ChangeFeed),
 }
 
 fn table_opts(i: &str) -> IResult<&str, DefineTableOption> {
-	alt((table_drop, table_view, table_schemaless, table_schemafull, table_permissions))(i)
+	alt((table_drop, table_view, table_schemaless, table_schemafull, table_permissions, table_changefeed))(i)
 }
 
 fn table_drop(i: &str) -> IResult<&str, DefineTableOption> {
@@ -949,6 +957,12 @@ fn table_permissions(i: &str) -> IResult<&str, DefineTableOption> {
 	let (i, _) = shouldbespace(i)?;
 	let (i, v) = permissions(i)?;
 	Ok((i, DefineTableOption::Permissions(v)))
+}
+
+fn table_changefeed(i: &str) -> IResult<&str, DefineTableOption> {
+	let (i, _) = shouldbespace(i)?;
+	let (i, v) = changefeed(i)?;
+	Ok((i, DefineTableOption::ChangeFeed(v)))
 }
 
 // --------------------------------------------------
@@ -1378,5 +1392,14 @@ mod tests {
 			idx.to_string(),
 			"DEFINE INDEX my_index ON my_table FIELDS my_col SEARCH ANALYZER my_analyzer VS ORDER 100"
 		);
+	}
+	
+	#[test]
+	fn define_with_changefeed() {
+		let sql = "DEFINE table mytable CHANGEFEED 1h";
+		let res = table(sql);
+		assert!(res.is_ok());
+		let out = res.unwrap().1;
+		assert_eq!(sql, format!("{}", out))
 	}
 }

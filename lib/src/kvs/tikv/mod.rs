@@ -1,11 +1,13 @@
 #![cfg(feature = "kv-tikv")]
 
 use crate::err::Error;
+use crate::key::cf;
 use crate::kvs::Key;
 use crate::kvs::Val;
 use std::ops::Range;
 use tikv::CheckLevel;
 use tikv::TransactionOptions;
+use tikv::TimestampExt;
 
 pub struct Datastore {
 	db: tikv::TransactionClient,
@@ -92,6 +94,61 @@ impl Transaction {
 		self.tx.commit().await?;
 		// Continue
 		Ok(())
+	}
+	/// Obtain a new change timestamp for a key
+	/// which is replaced with the current timestamp when the transaction is committed.
+	/// NOTE: This should be called when composing the change feed entries for this transaction,
+	/// which should be done immediately before the transaction commit.
+	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
+	#[allow(unused)]
+	pub async fn get_timestamp<K>(&mut self, key: K, lock: bool) -> Result<cf::Versionstamp, Error>
+	where
+		K: Into<Key>,
+	{
+		// Check to see if transaction is closed
+		if self.ok {
+			return Err(Error::TxFinished);
+		}
+		// Get the current timestamp
+		let res = self.tx.get_current_timestamp().await?;
+		let ver = res.version();
+		let verbytes = cf::u64_to_versionstamp(ver);
+		// Write the timestamp to the "last-write-timestamp" key
+		// to ensure that no other transactions can commit with older timestamps.
+		let k: Key = key.into();
+		if lock {
+			let prev = self.tx.get(k.clone()).await?;
+			match prev {
+				Some(prev) => {
+					let slice = prev.as_slice();
+					let res: Result<[u8; 10], Error> = match slice.try_into() {
+						Ok(ba) => Ok(ba),
+						Err(e) => Err(Error::Ds(e.to_string())),
+					};
+					let array = res?;
+					let prev = cf::to_u64_be(array);
+					if prev >= ver {
+						return Err(Error::TxFailure);
+					}
+				}
+				None => {}
+			}
+
+			let _x = self.tx.put(k, verbytes.to_vec()).await?;
+		}
+		// Return the uint64 representation of the timestamp as the result
+		Ok(cf::u64_to_versionstamp(ver))
+	}
+	/// Obtain a new key that is suffixed with the change timestamp
+	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>
+	where
+		K: Into<Key>,
+	{
+		let ts = self.get_timestamp(ts_key, false).await?;
+		let mut k: Vec<u8> = prefix.into();
+		k.append(&mut ts.to_vec());
+		k.append(&mut suffix.into());
+		Ok(k)
 	}
 	/// Check if a key exists
 	pub async fn exi<K>(&mut self, key: K) -> Result<bool, Error>

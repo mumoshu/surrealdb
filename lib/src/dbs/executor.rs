@@ -54,11 +54,17 @@ impl<'a> Executor<'a> {
 		}
 	}
 
+	/// Commits theh transaction if it is local.
+	/// This function takes two additional parameters that are not present in the underlyingn kvs::Transaction::commit() function:
+	/// ns: The namespace of the transaction
+	/// db: The database of the transaction
+	/// These parameters are used updating the changefeed.
+	///
 	/// # Return
 	///
 	/// An `Err` if the transaction could not be commited;
 	/// otherwise returns `Ok`.
-	async fn commit(&mut self, local: bool) -> Result<(), Error> {
+	async fn commit(&mut self, ns: &str, db: &str, local: bool) -> Result<(), Error> {
 		if local {
 			// Extract the transaction
 			if let Some(txn) = self.txn.take() {
@@ -67,14 +73,22 @@ impl<'a> Executor<'a> {
 					// Cancel and ignore any error because the error flag was
 					// already set
 					let _ = txn.cancel().await;
-				} else if let Err(e) = txn.commit().await {
-					// Transaction failed to commit
-					//
-					// TODO: Not all commit errors definitively mean
-					// the transaction didn't commit. Detect that and tell
-					// the user.
-					self.err = true;
-					return Err(e);
+				} else {
+					let r = match txn.complete_changes(ns, db, false).await {
+						Ok(_) => txn.commit().await,
+						r => {
+							r
+						}
+					};
+					if let Err(e) = r {
+						// Transaction failed to commit
+						//
+						// TODO: Not all commit errors definitively mean
+						// the transaction didn't commit. Detect that and tell
+						// the user.
+						self.err = true;
+						return Err(e);
+					}
 				}
 			}
 		}
@@ -192,7 +206,7 @@ impl<'a> Executor<'a> {
 				}
 				// Commit a running transaction
 				Statement::Commit(_) => {
-					let commit_error = self.commit(true).await.err();
+					let commit_error = self.commit(opt.ns(), opt.db(), true).await.err();
 					buf = buf.into_iter().map(|v| self.buf_commit(v, &commit_error)).collect();
 					out.append(&mut buf);
 					debug_assert!(self.txn.is_none(), "commit(true) should have unset txn");
@@ -262,7 +276,7 @@ impl<'a> Executor<'a> {
 									ctx.add_value(stm.name, val);
 									// Finalise transaction, returning nothing unless it couldn't commit
 									if writeable {
-										match self.commit(loc).await {
+										match self.commit(opt.ns(), opt.db(), loc).await {
 											Err(e) => Err(Error::QueryNotExecutedDetail {
 												message: e.to_string(),
 											}),
@@ -326,7 +340,7 @@ impl<'a> Executor<'a> {
 								};
 								// Finalise transaction and return the result.
 								if res.is_ok() && stm.writeable() {
-									if let Err(e) = self.commit(loc).await {
+									if let Err(e) = self.commit(opt.ns(), opt.db(), loc).await {
 										// The commit failed
 										Err(Error::QueryNotExecutedDetail {
 											message: e.to_string(),
