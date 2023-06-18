@@ -111,7 +111,7 @@ impl Transaction {
 	/// which should be done immediately before the transaction commit.
 	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
 	#[allow(unused)]
-	pub async fn get_timestamp<K>(&mut self, key: K) -> Result<u64, Error>
+	pub async fn get_timestamp<K>(&mut self, key: K) -> Result<cf::Versionstamp, Error>
 	where
 		K: Into<Key>,
 	{
@@ -126,12 +126,12 @@ impl Transaction {
 		let ver = match prev {
 			Some(prev) => {
 				let slice = prev.as_slice();
-				let res: Result<[u8; 8], Error> = match slice.try_into() {
+				let res: Result<[u8; 10], Error> = match slice.try_into() {
 					Ok(ba) => Ok(ba),
 					Err(e) => Err(Error::Ds(e.to_string())),
 				};
 				let array = res?;
-				let prev: u64 = u64::from_be_bytes(array);
+				let prev: u64 = cf::to_u64_be(array);
 				prev + 1
 			}
 			None => {
@@ -143,7 +143,18 @@ impl Transaction {
 
 		let _x = self.tx.put(k, verbytes.to_vec()).await?;
 		// Return the uint64 representation of the timestamp as the result
-		Ok(ver)
+		Ok(verbytes)
+	}
+	/// Obtain a new key that is suffixed with the change timestamp
+	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>
+	where
+		K: Into<Key>,
+	{
+		let ts = self.get_timestamp(ts_key).await?;
+		let mut k: Vec<u8> = prefix.into();
+		k.append(&mut ts.to_vec());
+		k.append(&mut suffix.into());
+		Ok(k)
 	}
 	/// Insert or update a key in the database
 	pub async fn set<K, V>(&mut self, key: K, val: V) -> Result<(), Error>
