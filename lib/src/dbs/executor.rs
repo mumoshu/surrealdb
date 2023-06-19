@@ -76,9 +76,7 @@ impl<'a> Executor<'a> {
 				} else {
 					let r = match txn.complete_changes(ns, db, false).await {
 						Ok(_) => txn.commit().await,
-						r => {
-							r
-						}
+						r => r,
 					};
 					if let Err(e) = r {
 						// Transaction failed to commit

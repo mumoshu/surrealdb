@@ -1,13 +1,13 @@
 #![cfg(feature = "kv-tikv")]
 
 use crate::err::Error;
-use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use crate::kvs::Key;
 use crate::kvs::Val;
+use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use std::ops::Range;
 use tikv::CheckLevel;
-use tikv::TransactionOptions;
 use tikv::TimestampExt;
+use tikv::TransactionOptions;
 
 pub struct Datastore {
 	db: tikv::TransactionClient,
@@ -140,7 +140,12 @@ impl Transaction {
 		Ok(u64_to_versionstamp(ver))
 	}
 	/// Obtain a new key that is suffixed with the change timestamp
-	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>
+	pub async fn get_versionstamped_key<K>(
+		&mut self,
+		ts_key: K,
+		prefix: K,
+		suffix: K,
+	) -> Result<Vec<u8>, Error>
 	where
 		K: Into<Key>,
 	{

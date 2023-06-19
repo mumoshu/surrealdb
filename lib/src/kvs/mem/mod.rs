@@ -1,21 +1,21 @@
 #![cfg(feature = "kv-mem")]
 
 use crate::err::Error;
-use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use crate::kvs::Key;
 use crate::kvs::Val;
+use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use std::ops::Range;
 
 use std::ascii::escape_default;
 use std::str;
 
 fn show(bs: &[u8]) -> String {
-    let mut visible = String::new();
-    for &b in bs {
-        let part: Vec<u8> = escape_default(b).collect();
-        visible.push_str(str::from_utf8(&part).unwrap());
-    }
-    visible
+	let mut visible = String::new();
+	for &b in bs {
+		let part: Vec<u8> = escape_default(b).collect();
+		visible.push_str(str::from_utf8(&part).unwrap());
+	}
+	visible
 }
 
 pub struct Datastore {
@@ -143,9 +143,7 @@ impl Transaction {
 				let prev = to_u64_be(array);
 				prev + 1
 			}
-			None => {
-				1
-			}
+			None => 1,
 		};
 
 		let verbytes = u64_to_versionstamp(ver);
@@ -155,7 +153,12 @@ impl Transaction {
 		Ok(verbytes)
 	}
 	/// Obtain a new key that is suffixed with the change timestamp
-	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>
+	pub async fn get_versionstamped_key<K>(
+		&mut self,
+		ts_key: K,
+		prefix: K,
+		suffix: K,
+	) -> Result<Vec<u8>, Error>
 	where
 		K: Into<Key>,
 	{
@@ -168,11 +171,18 @@ impl Transaction {
 		k.append(&mut ts.to_vec());
 		k.append(&mut suffix.clone().into());
 
-		println!("get_versionstamped_key: ts_key={} prefix={} r={} suffix={} k={}", show(ts_key.as_slice()), show(prefix.as_slice()), show(ts.as_slice()), show(suffix.as_slice()), show(k.as_slice()));
+		println!(
+			"get_versionstamped_key: ts_key={} prefix={} r={} suffix={} k={}",
+			show(ts_key.as_slice()),
+			show(prefix.as_slice()),
+			show(ts.as_slice()),
+			show(suffix.as_slice()),
+			show(k.as_slice())
+		);
 
 		Ok(k)
 	}
-	
+
 	/// Insert or update a key in the database
 	pub fn set<K, V>(&mut self, key: K, val: V) -> Result<(), Error>
 	where

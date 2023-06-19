@@ -1,9 +1,9 @@
 #![cfg(feature = "kv-indxdb")]
 
 use crate::err::Error;
+use crate::key::cf;
 use crate::kvs::Key;
 use crate::kvs::Val;
-use crate::key::cf;
 use std::ops::Range;
 
 pub struct Datastore {
@@ -134,9 +134,7 @@ impl Transaction {
 				let prev: u64 = cf::to_u64_be(array);
 				prev + 1
 			}
-			None => {
-				1
-			}
+			None => 1,
 		};
 
 		let verbytes = vs::u64_to_versionstamp(ver);
@@ -146,7 +144,12 @@ impl Transaction {
 		Ok(verbytes)
 	}
 	/// Obtain a new key that is suffixed with the change timestamp
-	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>
+	pub async fn get_versionstamped_key<K>(
+		&mut self,
+		ts_key: K,
+		prefix: K,
+		suffix: K,
+	) -> Result<Vec<u8>, Error>
 	where
 		K: Into<Key>,
 	{

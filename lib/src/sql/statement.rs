@@ -253,7 +253,7 @@ mod tests {
 		let out = res.unwrap().1;
 		assert_eq!("CREATE test;\nCREATE temp;", format!("{}", out))
 	}
-	
+
 	#[test]
 	fn show_table_changes() {
 		let sql = "SHOW CHANGES FOR TABLE test SINCE 123456";

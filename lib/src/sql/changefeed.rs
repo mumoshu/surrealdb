@@ -1,9 +1,9 @@
+use crate::sql::array::Array;
 use crate::sql::comment::shouldbespace;
 use crate::sql::error::IResult;
+use crate::sql::object::Object;
 use crate::sql::thing::Thing;
 use crate::sql::value::Value;
-use crate::sql::array::Array;
-use crate::sql::object::Object;
 use crate::vs::to_u128_be;
 use nom::bytes::complete::tag_no_case;
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,7 @@ use derive::Store;
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, Hash)]
 pub struct ChangeFeed {
-    pub enabled: bool,
+	pub enabled: bool,
 	pub expiry: time::Duration,
 }
 
@@ -100,9 +100,7 @@ pub struct ChangeSet(pub [u8; 10], pub DatabaseMutation);
 impl TableMutation {
 	pub fn to_value(&self) -> Value {
 		let (k, v) = match self {
-			TableMutation::Set(_t, v) => {
-				("update".to_string(), v.clone())
-			}
+			TableMutation::Set(_t, v) => ("update".to_string(), v.clone()),
 			TableMutation::Del(t) => {
 				let mut h = BTreeMap::<String, Value>::new();
 				h.insert("id".to_string(), Value::Thing(t.clone()));
@@ -158,7 +156,6 @@ impl Display for TableMutations {
 		muts.iter().try_for_each(|v| write!(f, "{}", v))
 	}
 }
-
 
 impl Display for DatabaseMutation {
 	fn fmt(&self, f: &mut Formatter) -> fmt::Result {

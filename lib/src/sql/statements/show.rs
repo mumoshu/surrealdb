@@ -5,12 +5,12 @@ use crate::dbs::Transaction;
 use crate::err::Error;
 use crate::sql::comment::shouldbespace;
 use crate::sql::error::IResult;
-use crate::sql::value::Value;
 use crate::sql::table::{table, Table};
+use crate::sql::value::Value;
 use derive::Store;
 use nom::branch::alt;
-use nom::combinator::map;
 use nom::bytes::complete::tag_no_case;
+use nom::combinator::map;
 use nom::combinator::opt;
 use nom::combinator::recognize;
 use nom::sequence::preceded;
@@ -86,16 +86,12 @@ pub fn table_or_database(i: &str) -> IResult<&str, Option<String>> {
 
 pub fn int_str(i: &str) -> IResult<&str, &str> {
 	use nom::{
+		character::complete::{char, one_of},
 		multi::{many0, many1},
 		sequence::terminated,
-		character::complete::{char, one_of},
-	  };
+	};
 
-	recognize(
-		many1(
-		terminated(one_of("0123456789"), many0(char('_')))
-		)
-	)(i)
+	recognize(many1(terminated(one_of("0123456789"), many0(char('_')))))(i)
 }
 
 pub fn since(i: &str) -> IResult<&str, u64> {
@@ -139,13 +135,12 @@ pub fn show(i: &str) -> IResult<&str, ShowStatement> {
 	Ok((
 		i,
 		ShowStatement {
-			table: table,
-			since: since,
-			limit: limit,
+			table,
+			since,
+			limit,
 		},
 	))
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -159,7 +154,7 @@ mod tests {
 		let out = res.unwrap().1.unwrap();
 		assert_eq!("person", format!("{}", out))
 	}
-	
+
 	#[test]
 	fn db() {
 		let sql = "DATABASE";
@@ -194,7 +189,7 @@ mod tests {
 		let out = res.unwrap().1;
 		assert_eq!(sql, format!("{}", out))
 	}
-	
+
 	#[test]
 	fn show_database_changes() {
 		let sql = "SHOW CHANGES FOR DATABASE";
@@ -203,7 +198,7 @@ mod tests {
 		let out = res.unwrap().1;
 		assert_eq!(sql, format!("{}", out))
 	}
-	
+
 	#[test]
 	fn show_database_changes_since() {
 		let sql = "SHOW CHANGES FOR DATABASE SINCE 0";

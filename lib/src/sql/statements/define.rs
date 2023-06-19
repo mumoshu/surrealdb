@@ -5,6 +5,7 @@ use crate::err::Error;
 use crate::sql::algorithm::{algorithm, Algorithm};
 use crate::sql::base::{base, base_or_scope, Base};
 use crate::sql::block::{block, Block};
+use crate::sql::changefeed::{changefeed, ChangeFeed};
 use crate::sql::comment::{mightbespace, shouldbespace};
 use crate::sql::common::commas;
 use crate::sql::duration::{duration, Duration};
@@ -19,7 +20,6 @@ use crate::sql::idiom::{Idiom, Idioms};
 use crate::sql::index::Index;
 use crate::sql::kind::{kind, Kind};
 use crate::sql::permission::{permissions, Permissions};
-use crate::sql::changefeed::{changefeed, ChangeFeed};
 use crate::sql::statements::UpdateStatement;
 use crate::sql::strand::strand_raw;
 use crate::sql::tokenizer::{tokenizers, Tokenizer};
@@ -906,11 +906,13 @@ fn table(i: &str) -> IResult<&str, DefineTableStatement> {
 					_ => None,
 				})
 				.unwrap_or_default(),
-			changefeed: opts.iter().find_map(|x| match x {
-				DefineTableOption::ChangeFeed(ref v) => Some(v.to_owned()),
-				_ => None,
-			})
-			.unwrap_or_default(),
+			changefeed: opts
+				.iter()
+				.find_map(|x| match x {
+					DefineTableOption::ChangeFeed(ref v) => Some(v.to_owned()),
+					_ => None,
+				})
+				.unwrap_or_default(),
 		},
 	))
 }
@@ -926,7 +928,14 @@ pub enum DefineTableOption {
 }
 
 fn table_opts(i: &str) -> IResult<&str, DefineTableOption> {
-	alt((table_drop, table_view, table_schemaless, table_schemafull, table_permissions, table_changefeed))(i)
+	alt((
+		table_drop,
+		table_view,
+		table_schemaless,
+		table_schemafull,
+		table_permissions,
+		table_changefeed,
+	))(i)
 }
 
 fn table_drop(i: &str) -> IResult<&str, DefineTableOption> {
@@ -1393,7 +1402,7 @@ mod tests {
 			"DEFINE INDEX my_index ON my_table FIELDS my_col SEARCH ANALYZER my_analyzer VS ORDER 100"
 		);
 	}
-	
+
 	#[test]
 	fn define_with_changefeed() {
 		let sql = "DEFINE table mytable CHANGEFEED 1h";

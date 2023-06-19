@@ -16,7 +16,7 @@ pub struct Dv {
 
 #[allow(unused)]
 pub fn new(ns: &str, db: &str) -> Dv {
-	 Dv::new(ns.to_string(), db.to_string())
+	Dv::new(ns.to_string(), db.to_string())
 }
 
 impl Dv {
@@ -29,7 +29,7 @@ impl Dv {
 			db,
 			_d: b'!',
 			_e: b't',
-			_f: b't', 
+			_f: b't',
 		}
 	}
 }

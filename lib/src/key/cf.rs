@@ -25,7 +25,7 @@ pub struct Cf {
 
 #[allow(unused)]
 pub fn new(ns: &str, db: &str, ts: u64, tb: &str) -> Cf {
-	 Cf::new(ns.to_string(), db.to_string(), vs::u64_to_versionstamp(ts), tb.to_string())
+	Cf::new(ns.to_string(), db.to_string(), vs::u64_to_versionstamp(ts), tb.to_string())
 }
 
 #[allow(unused)]
@@ -44,7 +44,6 @@ pub fn versionstamped_key_suffix(tb: &str) -> Vec<u8> {
 	k.extend_from_slice(&[0x00]);
 	k
 }
-
 
 /// Returns the prefix for the whole database change feeds since the
 /// specified versionstamp.
@@ -83,7 +82,7 @@ impl Cf {
 			_d: b'!',
 			_e: b'c',
 			_f: b'f',
-			vs: vs,
+			vs,
 			_c: b'*',
 			tb,
 		}
@@ -92,8 +91,8 @@ impl Cf {
 
 #[cfg(test)]
 mod tests {
-	use std::ascii::escape_default;
 	use crate::vs::*;
+	use std::ascii::escape_default;
 
 	#[test]
 	fn key() {

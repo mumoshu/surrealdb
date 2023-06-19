@@ -30,7 +30,7 @@ impl<'a> Document<'a> {
 			let id = self.id.as_ref().unwrap().clone();
 			// Create the changefeed entry
 			run.record_change(tb, id, self.current.to_owned());
-        }
+		}
 		// Carry on
 		Ok(())
 	}

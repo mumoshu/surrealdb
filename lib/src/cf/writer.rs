@@ -1,17 +1,17 @@
-use crate::kvs::{Key};
-use std::collections::HashMap;
-use std::borrow::Cow;
-use crate::sql::value::Value;
-use crate::sql::thing::Thing;
-use crate::sql::ident::Ident;
+use crate::kvs::Key;
 use crate::sql::changefeed::{TableMutation, TableMutations};
+use crate::sql::ident::Ident;
+use crate::sql::thing::Thing;
+use crate::sql::value::Value;
+use std::borrow::Cow;
+use std::collections::HashMap;
 
 pub struct Writer {
-    buf: Buffer,
+	buf: Buffer,
 }
 
 pub struct Buffer {
-	pub b: HashMap<String,TableMutations>,
+	pub b: HashMap<String, TableMutations>,
 }
 
 impl Buffer {
@@ -36,13 +36,7 @@ impl Writer {
 		}
 	}
 
-	pub(crate) fn update<'b>(
-		&mut self,
-		tb: Ident,
-		id: Thing,
-		v: Cow<'b, Value>,
-	) 
-    {
+	pub(crate) fn update<'b>(&mut self, tb: Ident, id: Thing, v: Cow<'b, Value>) {
 		if v.is_some() {
 			self.buf.push(tb.0, TableMutation::Set(id, v.into_owned()));
 		} else {
@@ -52,14 +46,18 @@ impl Writer {
 
 	// get returns all the mutations buffered for this transaction,
 	// that are to be written onto the key composed of the specified prefix + the current timestamp + the specified suffix.
-	pub(crate) fn get(&self, ns: &str, db: &str) -> Vec<(Vec<u8>, Vec<u8>, Vec<u8>, crate::kvs::Val)> {
+	pub(crate) fn get(
+		&self,
+		ns: &str,
+		db: &str,
+	) -> Vec<(Vec<u8>, Vec<u8>, Vec<u8>, crate::kvs::Val)> {
 		let mut r = Vec::<(Vec<u8>, Vec<u8>, Vec<u8>, crate::kvs::Val)>::new();
 		// Get the current timestamp
 		for (table, mutations) in self.buf.b.iter() {
 			let ts_key: Key = crate::key::dv::new(ns, db).into();
 			let tc_key_prefix: Key = crate::key::cf::versionstamped_key_prefix(ns, db).into();
 			let tc_key_suffix: Key = crate::key::cf::versionstamped_key_suffix(table.as_str());
-			
+
 			r.push((ts_key, tc_key_prefix, tc_key_suffix, mutations.into()))
 		}
 		r
@@ -72,13 +70,13 @@ impl Writer {
 mod tests {
 	use std::borrow::Cow;
 
-	use crate::vs;
 	use crate::kvs::Datastore;
 	use crate::sql::changefeed::{ChangeSet, DatabaseMutation, TableMutation, TableMutations};
 	use crate::sql::id::Id;
 	use crate::sql::statements::DefineTableStatement;
 	use crate::sql::thing::Thing;
 	use crate::sql::value::Value;
+	use crate::vs;
 
 	#[tokio::test]
 	async fn test_changefeed_read_write() {
@@ -92,14 +90,20 @@ mod tests {
 		let ds = Datastore::new("memory").await.unwrap();
 
 		let mut tx1 = ds.transaction(true, false).await.unwrap();
-		let thing_a = Thing{tb: tb.clone().0, id: Id::String("A".to_string())};
+		let thing_a = Thing {
+			tb: tb.clone().0,
+			id: Id::String("A".to_string()),
+		};
 		let value_a: super::Value = "a".into();
 		tx1.record_change(&dtb, thing_a, Cow::Borrowed(&value_a));
 		tx1.complete_changes(ns, db, true).await.unwrap();
 		let _r1 = tx1.commit().await.unwrap();
 
 		let mut tx2 = ds.transaction(true, false).await.unwrap();
-		let thing_c = Thing{tb: tb.clone().0, id: Id::String("C".to_string())};
+		let thing_c = Thing {
+			tb: tb.clone().0,
+			id: Id::String("C".to_string()),
+		};
 		let value_c: Value = "c".into();
 		tx2.record_change(&dtb, thing_c, Cow::Borrowed(&value_c));
 		tx2.complete_changes(ns, db, true).await.unwrap();
@@ -107,10 +111,16 @@ mod tests {
 
 		let x = ds.transaction(true, false).await;
 		let mut tx3 = x.unwrap();
-		let thing_b = Thing{tb: tb.clone().0, id: Id::String("B".to_string())};
+		let thing_b = Thing {
+			tb: tb.clone().0,
+			id: Id::String("B".to_string()),
+		};
 		let value_b: Value = "b".into();
 		tx3.record_change(&dtb, thing_b, Cow::Borrowed(&value_b));
-		let thing_c2 = Thing{tb: tb.clone().0, id: Id::String("C".to_string())};
+		let thing_c2 = Thing {
+			tb: tb.clone().0,
+			id: Id::String("C".to_string()),
+		};
 		let value_c2: Value = "c2".into();
 		tx3.record_change(&dtb, thing_c2, Cow::Borrowed(&value_c2));
 		tx3.complete_changes(ns, db, true).await.unwrap();
@@ -129,52 +139,42 @@ mod tests {
 		tx4.commit().await.unwrap();
 
 		let mut want: Vec<ChangeSet> = Vec::new();
-		want.push(
-			ChangeSet(
-				vs::u64_to_versionstamp(1),
-				DatabaseMutation(
-					vec![
-						TableMutations(
-							"mytb".to_string(),
-							vec![
-								TableMutation::Set(Thing::from(("mytb".to_string(), "A".to_string())), Value::from("a")),
-							]
-						)
-					]
-				)
-			),
-		);
-		want.push(
-			ChangeSet(
-				vs::u64_to_versionstamp(2),
-				DatabaseMutation(
-					vec![
-						TableMutations(
-							"mytb".to_string(),
-							vec![
-								TableMutation::Set(Thing::from(("mytb".to_string(), "C".to_string())), Value::from("c")),
-							]
-						)
-					]
-				)
-			),
-		);
-		want.push(
-			ChangeSet(
-				vs::u64_to_versionstamp(3),
-				DatabaseMutation(
-					vec![
-						TableMutations(
-							"mytb".to_string(),
-							vec![
-								TableMutation::Set(Thing::from(("mytb".to_string(), "B".to_string())), Value::from("b")),
-								TableMutation::Set(Thing::from(("mytb".to_string(), "C".to_string())), Value::from("c2")),
-							]
-						)
-					]
-				)
-			),
-		);
+		want.push(ChangeSet(
+			vs::u64_to_versionstamp(1),
+			DatabaseMutation(vec![TableMutations(
+				"mytb".to_string(),
+				vec![TableMutation::Set(
+					Thing::from(("mytb".to_string(), "A".to_string())),
+					Value::from("a"),
+				)],
+			)]),
+		));
+		want.push(ChangeSet(
+			vs::u64_to_versionstamp(2),
+			DatabaseMutation(vec![TableMutations(
+				"mytb".to_string(),
+				vec![TableMutation::Set(
+					Thing::from(("mytb".to_string(), "C".to_string())),
+					Value::from("c"),
+				)],
+			)]),
+		));
+		want.push(ChangeSet(
+			vs::u64_to_versionstamp(3),
+			DatabaseMutation(vec![TableMutations(
+				"mytb".to_string(),
+				vec![
+					TableMutation::Set(
+						Thing::from(("mytb".to_string(), "B".to_string())),
+						Value::from("b"),
+					),
+					TableMutation::Set(
+						Thing::from(("mytb".to_string(), "C".to_string())),
+						Value::from("c2"),
+					),
+				],
+			)]),
+		));
 
 		assert_eq!(r, want);
 
@@ -190,22 +190,22 @@ mod tests {
 		tx6.commit().await.unwrap();
 
 		let mut want: Vec<ChangeSet> = Vec::new();
-		want.push(
-			ChangeSet(
-				vs::u64_to_versionstamp(3),
-				DatabaseMutation(
-					vec![
-						TableMutations(
-							"mytb".to_string(),
-							vec![
-								TableMutation::Set(Thing::from(("mytb".to_string(), "B".to_string())), Value::from("b")),
-								TableMutation::Set(Thing::from(("mytb".to_string(), "C".to_string())), Value::from("c2")),
-							]
-						)
-					]
-				)
-			),
-		);
+		want.push(ChangeSet(
+			vs::u64_to_versionstamp(3),
+			DatabaseMutation(vec![TableMutations(
+				"mytb".to_string(),
+				vec![
+					TableMutation::Set(
+						Thing::from(("mytb".to_string(), "B".to_string())),
+						Value::from("b"),
+					),
+					TableMutation::Set(
+						Thing::from(("mytb".to_string(), "C".to_string())),
+						Value::from("c2"),
+					),
+				],
+			)]),
+		));
 		assert_eq!(r, want);
 	}
 }

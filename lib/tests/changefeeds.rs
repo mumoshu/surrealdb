@@ -39,8 +39,8 @@ async fn table_change_feeds() -> Result<(), Error> {
 	// DEFINE TABLE
 	let tmp = res.remove(0).result;
 	assert!(tmp.is_ok());
-    // DEFINE FIELD
-    let tmp = res.remove(0).result;
+	// DEFINE FIELD
+	let tmp = res.remove(0).result;
 	assert!(tmp.is_ok());
 	// UPDATE CONTENT
 	let tmp = res.remove(0).result?;
@@ -89,9 +89,7 @@ async fn table_change_feeds() -> Result<(), Error> {
 	assert_eq!(tmp, val);
 	// DELETE
 	let tmp = res.remove(0).result?;
-	let val = Value::parse(
-		"[]",
-	);
+	let val = Value::parse("[]");
 	assert_eq!(tmp, val);
 	// CREATE
 	let _tmp = res.remove(0).result?;

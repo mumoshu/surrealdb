@@ -15,8 +15,8 @@ use crate::sql::thing::Thing;
 use crate::sql::Value;
 use crate::vs::Versionstamp;
 use channel::Sender;
-use sql::permission::Permissions;
 use sql::changefeed::ChangeFeed;
+use sql::permission::Permissions;
 use sql::statements::DefineAnalyzerStatement;
 use sql::statements::DefineDatabaseStatement;
 use sql::statements::DefineEventStatement;
@@ -441,7 +441,13 @@ impl Transaction {
 
 	/// Insert or update a key in the datastore.
 	#[allow(unused_variables)]
-	pub async fn set_versionstamped_key<K, V>(&mut self, ts_key: K, prefix: K, suffix: K, val: V) -> Result<(), Error>
+	pub async fn set_versionstamped_key<K, V>(
+		&mut self,
+		ts_key: K,
+		prefix: K,
+		suffix: K,
+		val: V,
+	) -> Result<(), Error>
 	where
 		K: Into<Key> + Debug,
 		V: Into<Val> + Debug,
@@ -456,7 +462,7 @@ impl Transaction {
 			} => {
 				let k = v.get_versionstamped_key(ts_key, prefix, suffix).await?;
 				v.set(k, val)
-			},
+			}
 			#[cfg(feature = "kv-rocksdb")]
 			Transaction {
 				inner: Inner::RocksDB(v),
@@ -464,7 +470,7 @@ impl Transaction {
 			} => {
 				let k = v.get_versionstamped_key(ts_key, prefix, suffix).await?;
 				v.set(k, val).await
-			},
+			}
 			#[cfg(feature = "kv-indxdb")]
 			Transaction {
 				inner: Inner::IndxDB(v),
@@ -472,7 +478,7 @@ impl Transaction {
 			} => {
 				let k = v.get_versionstamped_key(ts_key, prefix, suffix).await?;
 				v.set(k, val).await
-			},
+			}
 			#[cfg(feature = "kv-tikv")]
 			Transaction {
 				inner: Inner::TiKV(v),
@@ -480,7 +486,7 @@ impl Transaction {
 			} => {
 				let k = v.get_versionstamped_key(ts_key, prefix, suffix).await?;
 				v.set(k, val).await
-			},
+			}
 			#[cfg(feature = "kv-fdb")]
 			Transaction {
 				inner: Inner::FDB(v),
@@ -1985,7 +1991,12 @@ impl Transaction {
 	//
 	// Lastly, you should set lock=true if you want the changefeed to be correctly ordered for
 	// non-FDB backends.
-	pub(crate) async fn complete_changes(&mut self, ns: &str, db: &str, _lock: bool) -> Result<(), Error> {
+	pub(crate) async fn complete_changes(
+		&mut self,
+		ns: &str,
+		db: &str,
+		_lock: bool,
+	) -> Result<(), Error> {
 		let changes = self.cf.get(ns, db);
 		for (tskey, prefix, suffix, v) in changes {
 			self.set_versionstamped_key(tskey, prefix, suffix, v).await?
