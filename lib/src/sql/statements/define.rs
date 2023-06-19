@@ -865,6 +865,9 @@ impl Display for DefineTableStatement {
 			};
 			write!(f, "{}", self.permissions)?;
 		}
+		if self.changefeed.enabled {
+			write!(f, " CHANGEFEED {}", crate::sql::duration::Duration(self.changefeed.expiry))?;
+		}
 		Ok(())
 	}
 }
@@ -1405,7 +1408,7 @@ mod tests {
 
 	#[test]
 	fn define_with_changefeed() {
-		let sql = "DEFINE table mytable CHANGEFEED 1h";
+		let sql = "DEFINE TABLE mytable SCHEMALESS CHANGEFEED 1h";
 		let res = table(sql);
 		assert!(res.is_ok());
 		let out = res.unwrap().1;
