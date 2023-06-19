@@ -86,7 +86,9 @@ pub struct Cf {
 	_d: u8,
 	_e: u8,
 	_f: u8,
-	pub ts: [u8; 10],
+	// vs is the versionstamp of the change feed entry that is encoded in big-endian.
+	// Use the to_u64_be function to convert it to a u128.
+	pub vs: [u8; 10],
 	_c: u8,
 	pub tb: String,
 }
@@ -114,14 +116,17 @@ pub fn versionstamped_key_suffix(tb: &str) -> Vec<u8> {
 }
 
 
+/// Returns the prefix for the whole database change feeds since the
+/// specified versionstamp.
 #[allow(unused)]
-pub fn ts_prefix(ns: &str, db: &str, ts: Versionstamp) -> Vec<u8> {
+pub fn ts_prefix(ns: &str, db: &str, vs: Versionstamp) -> Vec<u8> {
 	let mut k = super::database::new(ns, db).encode().unwrap();
 	k.extend_from_slice(&[b'!', b'c', b'f']);
-	k.extend_from_slice(&ts);
+	k.extend_from_slice(&vs);
 	k
 }
 
+/// Returns the prefix for the whole database change feeds
 #[allow(unused)]
 pub fn prefix(ns: &str, db: &str) -> Vec<u8> {
 	let mut k = super::database::new(ns, db).encode().unwrap();
@@ -129,6 +134,7 @@ pub fn prefix(ns: &str, db: &str) -> Vec<u8> {
 	k
 }
 
+/// Returns the suffix for the whole database change feeds
 #[allow(unused)]
 pub fn suffix(ns: &str, db: &str) -> Vec<u8> {
 	let mut k = super::database::new(ns, db).encode().unwrap();
@@ -137,7 +143,7 @@ pub fn suffix(ns: &str, db: &str) -> Vec<u8> {
 }
 
 impl Cf {
-	pub fn new(ns: String, db: String, ts: [u8; 10], tb: String) -> Cf {
+	pub fn new(ns: String, db: String, vs: [u8; 10], tb: String) -> Cf {
 		Cf {
 			__: b'/',
 			_a: b'*',
@@ -147,7 +153,7 @@ impl Cf {
 			_d: b'!',
 			_e: b'c',
 			_f: b'f',
-			ts: ts,
+			vs: vs,
 			_c: b'*',
 			tb,
 		}
