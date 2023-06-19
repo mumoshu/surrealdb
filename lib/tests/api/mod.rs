@@ -676,8 +676,16 @@ async fn delete_record_range() {
 async fn changefeed() {
 	let db = new_db().await;
 	db.use_ns(NS).use_db(Ulid::new().to_string()).await.unwrap();
+	// Enable change feeds
+	let sql = "
+	DEFINE TABLE user CHANGEFEED 1h;
+	";
+	let response = db.query(sql)
+		.await
+		.unwrap();
+	response.check().unwrap();
+	// Create and update users
     let sql = "
-        DEFINE TABLE user CHANGEFEED 1h;
         CREATE user:amos SET name = 'Amos';
         CREATE user:jane SET name = 'Jane';
         UPDATE user:amos SET name = 'AMOS';
