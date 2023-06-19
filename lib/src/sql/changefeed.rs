@@ -1,10 +1,10 @@
-use crate::key::cf;
 use crate::sql::comment::shouldbespace;
 use crate::sql::error::IResult;
 use crate::sql::thing::Thing;
 use crate::sql::value::Value;
 use crate::sql::array::Array;
 use crate::sql::object::Object;
+use crate::vs::to_u128_be;
 use nom::bytes::complete::tag_no_case;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -133,7 +133,7 @@ impl DatabaseMutation {
 impl ChangeSet {
 	pub fn to_value(self) -> Value {
 		let mut m = BTreeMap::<String, Value>::new();
-		let vs = cf::to_u128_be(self.0);
+		let vs = to_u128_be(self.0);
 		m.insert("versionstamp".to_string(), Value::from(vs));
 		m.insert("changes".to_string(), self.1.to_value());
 		let so: Object = m.into();

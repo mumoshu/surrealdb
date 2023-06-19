@@ -3,6 +3,7 @@ use crate::err::Error;
 use crate::kvs::Transaction;
 use crate::key::cf;
 use crate::key::dv;
+use crate::vs;
 
 use std::ascii::escape_default;
 use std::str;
@@ -24,7 +25,7 @@ pub async fn read(tx: &mut Transaction, ns: &str, db: &str, tb: Option<&str>, st
     let seq = dv::new(ns, db);
 
     let beg = match start {
-        Some(x) => cf::ts_prefix(ns, db, cf::u64_to_versionstamp(x)),
+        Some(x) => cf::ts_prefix(ns, db, vs::u64_to_versionstamp(x)),
         None => {
             let ts = tx.get_timestamp(seq, false).await?;
             cf::ts_prefix(ns, db, ts)

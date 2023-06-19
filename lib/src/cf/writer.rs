@@ -72,7 +72,7 @@ impl Writer {
 mod tests {
 	use std::borrow::Cow;
 
-	use crate::key::cf;
+	use crate::vs;
 	use crate::kvs::Datastore;
 	use crate::sql::changefeed::{ChangeSet, DatabaseMutation, TableMutation, TableMutations};
 	use crate::sql::id::Id;
@@ -131,7 +131,7 @@ mod tests {
 		let mut want: Vec<ChangeSet> = Vec::new();
 		want.push(
 			ChangeSet(
-				cf::u64_to_versionstamp(1),
+				vs::u64_to_versionstamp(1),
 				DatabaseMutation(
 					vec![
 						TableMutations(
@@ -146,7 +146,7 @@ mod tests {
 		);
 		want.push(
 			ChangeSet(
-				cf::u64_to_versionstamp(2),
+				vs::u64_to_versionstamp(2),
 				DatabaseMutation(
 					vec![
 						TableMutations(
@@ -161,7 +161,7 @@ mod tests {
 		);
 		want.push(
 			ChangeSet(
-				cf::u64_to_versionstamp(3),
+				vs::u64_to_versionstamp(3),
 				DatabaseMutation(
 					vec![
 						TableMutations(
@@ -192,7 +192,7 @@ mod tests {
 		let mut want: Vec<ChangeSet> = Vec::new();
 		want.push(
 			ChangeSet(
-				cf::u64_to_versionstamp(3),
+				vs::u64_to_versionstamp(3),
 				DatabaseMutation(
 					vec![
 						TableMutations(

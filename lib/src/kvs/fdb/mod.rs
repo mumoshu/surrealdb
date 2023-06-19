@@ -2,7 +2,7 @@
 
 use futures::TryStreamExt;
 
-use crate::key::cf;
+use crate::vs::{u64_to_versionstamp, Versionstamp};
 use crate::err::Error;
 use crate::kvs::Key;
 use crate::kvs::Val;
@@ -203,7 +203,7 @@ impl Transaction {
 	/// which should be done immediately before the transaction commit.
 	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
 	#[allow(unused)]
-	pub async fn get_timestamp(&mut self) -> Result<cf::Versionstamp, Error>
+	pub async fn get_timestamp(&mut self) -> Result<Versionstamp, Error>
 	{
 		// Check to see if transaction is closed
 		if self.ok {
@@ -213,7 +213,7 @@ impl Transaction {
 		let tx = tx.as_ref().unwrap();
 		let res = tx.get_read_version().await.map_err(|e| Error::Tx(format!("Unable to get read version from FDB: {}", e)))?;
 		let res: u64 = res.try_into().unwrap();
-		let res = cf::u64_to_versionstamp(res);
+		let res = u64_to_versionstamp(res);
 		
 		// Return the uint64 representation of the timestamp as the result
 		Ok(res)

@@ -139,7 +139,7 @@ impl Transaction {
 			}
 		};
 
-		let verbytes = cf::u64_to_versionstamp(ver);
+		let verbytes = vs::u64_to_versionstamp(ver);
 
 		let _x = self.tx.put(k, verbytes.to_vec()).await?;
 		// Return the uint64 representation of the timestamp as the result

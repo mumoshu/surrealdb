@@ -113,6 +113,7 @@ mod doc;
 mod exe;
 mod fnc;
 mod key;
+mod vs;
 
 pub mod sql;
 

@@ -1,7 +1,7 @@
 #![cfg(feature = "kv-rocksdb")]
 
 use crate::err::Error;
-use crate::key::cf;
+use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use crate::kvs::Key;
 use crate::kvs::Val;
 use futures::lock::Mutex;
@@ -143,7 +143,7 @@ impl Transaction {
 	/// which should be done immediately before the transaction commit.
 	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
 	#[allow(unused)]
-	pub async fn get_timestamp<K>(&mut self, key: K) -> Result<cf::Versionstamp, Error>
+	pub async fn get_timestamp<K>(&mut self, key: K) -> Result<Versionstamp, Error>
 	where
 		K: Into<Key>,
 	{
@@ -163,7 +163,7 @@ impl Transaction {
 					Err(e) => Err(Error::Ds(e.to_string())),
 				};
 				let array = res?;
-				let prev = cf::to_u64_be(array);
+				let prev = to_u64_be(array);
 				prev + 1
 			}
 			None => {
@@ -171,7 +171,7 @@ impl Transaction {
 			}
 		};
 
-		let verbytes = cf::u64_to_versionstamp(ver);
+		let verbytes = u64_to_versionstamp(ver);
 
 		let _x = self.tx.lock().await.as_ref().unwrap().put(k, verbytes.to_vec())?;
 		// Return the uint64 representation of the timestamp as the result

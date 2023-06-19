@@ -1,7 +1,7 @@
 #![cfg(feature = "kv-tikv")]
 
 use crate::err::Error;
-use crate::key::cf;
+use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use crate::kvs::Key;
 use crate::kvs::Val;
 use std::ops::Range;
@@ -101,7 +101,7 @@ impl Transaction {
 	/// which should be done immediately before the transaction commit.
 	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
 	#[allow(unused)]
-	pub async fn get_timestamp<K>(&mut self, key: K, lock: bool) -> Result<cf::Versionstamp, Error>
+	pub async fn get_timestamp<K>(&mut self, key: K, lock: bool) -> Result<Versionstamp, Error>
 	where
 		K: Into<Key>,
 	{
@@ -112,7 +112,7 @@ impl Transaction {
 		// Get the current timestamp
 		let res = self.tx.get_current_timestamp().await?;
 		let ver = res.version();
-		let verbytes = cf::u64_to_versionstamp(ver);
+		let verbytes = u64_to_versionstamp(ver);
 		// Write the timestamp to the "last-write-timestamp" key
 		// to ensure that no other transactions can commit with older timestamps.
 		let k: Key = key.into();
@@ -126,7 +126,7 @@ impl Transaction {
 						Err(e) => Err(Error::Ds(e.to_string())),
 					};
 					let array = res?;
-					let prev = cf::to_u64_be(array);
+					let prev = to_u64_be(array);
 					if prev >= ver {
 						return Err(Error::TxFailure);
 					}
@@ -137,7 +137,7 @@ impl Transaction {
 			let _x = self.tx.put(k, verbytes.to_vec()).await?;
 		}
 		// Return the uint64 representation of the timestamp as the result
-		Ok(cf::u64_to_versionstamp(ver))
+		Ok(u64_to_versionstamp(ver))
 	}
 	/// Obtain a new key that is suffixed with the change timestamp
 	pub async fn get_versionstamped_key<K>(&mut self, ts_key: K, prefix: K, suffix: K) -> Result<Vec<u8>, Error>

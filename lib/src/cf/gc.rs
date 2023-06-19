@@ -1,6 +1,7 @@
+use crate::key::cf;
 use crate::err::Error;
 use crate::kvs::Transaction;
-use crate::key::cf;
+use crate::vs;
 use std::str;
 
 // gc_all deletes all change feed entries that are older than the given watermark.
@@ -29,8 +30,8 @@ pub async fn gc_ns(tx: &mut Transaction, ns: &str, watermark: u64, limit: Option
 // gc_db deletes all change feed entries in the given database that are older than the given watermark.
 pub async fn gc_db(tx: &mut Transaction, ns: &str, db: &str, watermark: u64, limit: Option<u32>) -> Result<(), Error>
 {
-    let beg = cf::ts_prefix(ns, db, cf::u64_to_versionstamp(0));
-    let end = cf::ts_prefix(ns, db, cf::u64_to_versionstamp(watermark+1));
+    let beg = cf::ts_prefix(ns, db, vs::u64_to_versionstamp(0));
+    let end = cf::ts_prefix(ns, db, vs::u64_to_versionstamp(watermark+1));
 
     let limit = match limit {
         Some(x) => x,

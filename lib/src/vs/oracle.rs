@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::key::cf;
+use super::{Versionstamp, u64_u16_to_versionstamp, u16_u64_to_versionstamp, u64_to_versionstamp, to_u128_be};
 
 // A versionstamp oracle is a source of truth for the current versionstamp of the database.
 // There are several kinds of versionstamp oracles, each provides a different versionstamp
@@ -52,7 +52,7 @@ pub enum Oracle {
 }
 
 impl Oracle {
-    pub fn now(&mut self) -> cf::Versionstamp {
+    pub fn now(&mut self) -> Versionstamp {
         match self {
             Oracle::SysTimeCounter(sys) => sys.now(),
             Oracle::EpochCounter(epoch) => epoch.now(),
@@ -69,7 +69,7 @@ pub struct SysTimeCounter {
 }
 
 impl SysTimeCounter {
-    pub fn now(&mut self) -> cf::Versionstamp {
+    pub fn now(&mut self) -> Versionstamp {
         // Increment the counter and get the current number as the logical time
         // only if the current physical time is the same as the last physical time.
         // Otherwise, reset the counter to 0 and get the current number as the logical time.
@@ -87,9 +87,9 @@ impl SysTimeCounter {
             state.0 = current_physical_time;
             state.1 += 1;
             self.stale = (current_physical_time, current_logical_time);
-            cf::u64_u16_to_versionstamp(current_physical_time, current_logical_time)
+            u64_u16_to_versionstamp(current_physical_time, current_logical_time)
         } else {
-            cf::u64_u16_to_versionstamp(self.stale.0, self.stale.1)
+            u64_u16_to_versionstamp(self.stale.0, self.stale.1)
         }
     }
 }
@@ -111,16 +111,16 @@ pub struct EpochCounter {
 }
 
 impl EpochCounter {
-    pub fn now(&mut self) -> cf::Versionstamp {
+    pub fn now(&mut self) -> Versionstamp {
         let counter = self.counter.fetch_add(1, Ordering::SeqCst);
-        cf::u16_u64_to_versionstamp(self.epoch, counter)
+        u16_u64_to_versionstamp(self.epoch, counter)
     }
 }
 
 #[allow(unused)]
-fn now() -> cf::Versionstamp {
+fn now() -> Versionstamp {
     let secs = secs_since_unix_epoch();
-    cf::u64_to_versionstamp(secs)
+    u64_to_versionstamp(secs)
 }
 
 #[allow(unused)]
@@ -142,8 +142,8 @@ mod tests {
             state: Mutex::new((0, 0)),
             stale: (0, 0),
         });
-        let a = cf::to_u128_be(o.now());
-        let b = cf::to_u128_be(o.now());
+        let a = to_u128_be(o.now());
+        let b = to_u128_be(o.now());
         assert!(a < b, "a = {}, b = {}", a, b);
     }
 
@@ -154,14 +154,14 @@ mod tests {
             epoch: 0,
             counter: AtomicU64::new(0),
         });
-        let a = cf::to_u128_be(o1.now());
-        let b = cf::to_u128_be(o1.now());
+        let a = to_u128_be(o1.now());
+        let b = to_u128_be(o1.now());
         assert!(a < b, "a = {}, b = {}", a, b);
         let mut o2 = Oracle::EpochCounter(EpochCounter {
             epoch: 1,
             counter: AtomicU64::new(0),
         });
-       let c = cf::to_u128_be(o2.now());
+       let c = to_u128_be(o2.now());
        assert!(b < c, "b = {}, c = {}", b, c);
     }
 }

@@ -3,6 +3,10 @@
 //! by applications.
 //! This module might be migrated into the kvs or kvs::tx module in the future.
 
+pub type Versionstamp = [u8; 10];
+
 pub(crate) mod oracle;
+pub(crate) mod conv;
 
 pub use self::oracle::*;
+pub use self::conv::*;

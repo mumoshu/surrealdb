@@ -13,6 +13,7 @@ use crate::sql::paths::IN;
 use crate::sql::paths::OUT;
 use crate::sql::thing::Thing;
 use crate::sql::Value;
+use crate::vs::Versionstamp;
 use channel::Sender;
 use sql::permission::Permissions;
 use sql::changefeed::ChangeFeed;
@@ -401,7 +402,7 @@ impl Transaction {
 	/// which should be done immediately before the transaction commit.
 	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
 	#[allow(unused)]
-	pub async fn get_timestamp<K>(&mut self, key: K, lock: bool) -> Result<crate::key::cf::Versionstamp, Error>
+	pub async fn get_timestamp<K>(&mut self, key: K, lock: bool) -> Result<Versionstamp, Error>
 	where
 		K: Into<Key>,
 	{
