@@ -1412,6 +1412,10 @@ mod tests {
 		let res = table(sql);
 		assert!(res.is_ok());
 		let out = res.unwrap().1;
-		assert_eq!(sql, format!("{}", out))
+		assert_eq!(sql, format!("{}", out));
+
+		let serialized = out.to_vec();
+		let deserializled = DefineTableStatement::try_from(&serialized).unwrap();
+		assert_eq!(out, deserializled);
 	}
 }
