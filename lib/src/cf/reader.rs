@@ -2,7 +2,7 @@ use crate::sql::changefeed::{ChangeSet, DatabaseMutation, TableMutations};
 use crate::err::Error;
 use crate::kvs::Transaction;
 use crate::key::cf;
-use crate::key::tt;
+use crate::key::dv;
 
 use std::ascii::escape_default;
 use std::str;
@@ -21,7 +21,7 @@ fn show(bs: &[u8]) -> String {
 pub async fn read(tx: &mut Transaction, ns: &str, db: &str, tb: Option<&str>, start: Option<u64>, limit: Option<u32>) -> Result<Vec<ChangeSet>, Error>
 {
     // Get the current timestamp
-    let seq = tt::new(ns, db);
+    let seq = dv::new(ns, db);
 
     let beg = match start {
         Some(x) => cf::ts_prefix(ns, db, cf::u64_to_versionstamp(x)),
@@ -57,7 +57,7 @@ pub async fn read(tx: &mut Transaction, ns: &str, db: &str, tb: Option<&str>, st
         }
 
         let _tb = dec.tb;
-        let ts = dec.ts;
+        let ts = dec.vs;
 
         // Decode the byte array into a vector of operations
         let tb_muts: TableMutations = v.into();

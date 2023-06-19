@@ -58,7 +58,7 @@ pub mod bs; // Stores FullText index states
 pub mod bt; // Stores BTree nodes for terms
 pub mod bu; // Stores terms for term_ids
 pub mod cf; // Stores change feeds
-pub mod tt; // Stores table timestamps
+pub mod dv; // Stores database versionstamps
 pub mod database; // Stores the key prefix for all keys under a database
 pub mod db; // Stores a DEFINE DATABASE config definition
 pub mod dl; // Stores a DEFINE LOGIN ON DATABASE config definition

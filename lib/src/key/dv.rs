@@ -1,9 +1,9 @@
 use derive::Key;
 use serde::{Deserialize, Serialize};
 
-// Tt stands for "T"able "t"imestamp
+// Dv stands for Database Versionstamp
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, Key)]
-pub struct Tt {
+pub struct Dv {
 	__: u8,
 	_a: u8,
 	pub ns: String,
@@ -15,13 +15,13 @@ pub struct Tt {
 }
 
 #[allow(unused)]
-pub fn new(ns: &str, db: &str) -> Tt {
-	 Tt::new(ns.to_string(), db.to_string())
+pub fn new(ns: &str, db: &str) -> Dv {
+	 Dv::new(ns.to_string(), db.to_string())
 }
 
-impl Tt {
-	pub fn new(ns: String, db: String) -> Tt {
-		Tt {
+impl Dv {
+	pub fn new(ns: String, db: String) -> Dv {
+		Dv {
 			__: b'/',
 			_a: b'*',
 			ns,
@@ -40,12 +40,12 @@ mod tests {
 	fn key() {
 		use super::*;
 		#[rustfmt::skip]
-		let val = Tt::new(
+		let val = Dv::new(
 			"test".to_string(),
 			"test".to_string(),
 		);
-		let enc = Tt::encode(&val).unwrap();
-		let dec = Tt::decode(&enc).unwrap();
+		let enc = Dv::encode(&val).unwrap();
+		let dec = Dv::decode(&enc).unwrap();
 		assert_eq!(val, dec);
 	}
 }

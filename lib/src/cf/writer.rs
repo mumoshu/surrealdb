@@ -56,7 +56,7 @@ impl Writer {
 		let mut r = Vec::<(Vec<u8>, Vec<u8>, Vec<u8>, crate::kvs::Val)>::new();
 		// Get the current timestamp
 		for (table, mutations) in self.buf.b.iter() {
-			let ts_key: Key = crate::key::tt::new(ns, db).into();
+			let ts_key: Key = crate::key::dv::new(ns, db).into();
 			let tc_key_prefix: Key = crate::key::cf::versionstamped_key_prefix(ns, db).into();
 			let tc_key_suffix: Key = crate::key::cf::versionstamped_key_suffix(table.as_str());
 			
