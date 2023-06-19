@@ -1,9 +1,9 @@
 #![cfg(feature = "kv-indxdb")]
 
 use crate::err::Error;
-use crate::key::cf;
 use crate::kvs::Key;
 use crate::kvs::Val;
+use crate::vs::{to_u64_be, u64_to_versionstamp, Versionstamp};
 use std::ops::Range;
 
 pub struct Datastore {
@@ -111,7 +111,7 @@ impl Transaction {
 	/// which should be done immediately before the transaction commit.
 	/// That is to keep other transactions commit delay(pessimistic) or conflict(optimistic) as less as possible.
 	#[allow(unused)]
-	pub async fn get_timestamp<K>(&mut self, key: K) -> Result<cf::Versionstamp, Error>
+	pub async fn get_timestamp<K>(&mut self, key: K) -> Result<Versionstamp, Error>
 	where
 		K: Into<Key>,
 	{
@@ -131,13 +131,13 @@ impl Transaction {
 					Err(e) => Err(Error::Ds(e.to_string())),
 				};
 				let array = res?;
-				let prev: u64 = cf::to_u64_be(array);
+				let prev: u64 = to_u64_be(array);
 				prev + 1
 			}
 			None => 1,
 		};
 
-		let verbytes = vs::u64_to_versionstamp(ver);
+		let verbytes = u64_to_versionstamp(ver);
 
 		let _x = self.tx.put(k, verbytes.to_vec()).await?;
 		// Return the uint64 representation of the timestamp as the result

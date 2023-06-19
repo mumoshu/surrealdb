@@ -5,9 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use super::{
-	to_u128_be, u16_u64_to_versionstamp, u64_to_versionstamp, u64_u16_to_versionstamp, Versionstamp,
-};
+use super::{u16_u64_to_versionstamp, u64_to_versionstamp, u64_u16_to_versionstamp, Versionstamp};
 
 // A versionstamp oracle is a source of truth for the current versionstamp of the database.
 // There are several kinds of versionstamp oracles, each provides a different versionstamp
@@ -134,7 +132,10 @@ fn secs_since_unix_epoch() -> u64 {
 }
 
 mod tests {
+	#[allow(unused)]
 	use super::*;
+	#[allow(unused)]
+	use crate::vs::to_u128_be;
 
 	#[test]
 	fn systime_counter() {

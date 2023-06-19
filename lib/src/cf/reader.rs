@@ -35,8 +35,7 @@ pub async fn read(
 		None => {
 			let ts = tx.get_timestamp(seq, false).await?;
 			cf::ts_prefix(ns, db, ts)
-		}
-		// None => dc::prefix(ns, db),
+		} // None => dc::prefix(ns, db),
 	};
 	let end = cf::suffix(ns, db);
 
