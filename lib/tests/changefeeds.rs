@@ -98,7 +98,7 @@ async fn table_change_feeds() -> Result<(), Error> {
 	let val = Value::parse(
 		"[
 			{
-				versionstamp: 1,
+				versionstamp: 65536,
 				changes: [
 					{
 						update: {
@@ -109,7 +109,7 @@ async fn table_change_feeds() -> Result<(), Error> {
 				]
 			},
 			{
-				versionstamp: 2,
+				versionstamp: 131072,
 				changes: [
 					{
 						update: {
@@ -120,7 +120,7 @@ async fn table_change_feeds() -> Result<(), Error> {
 				]
 			},
 			{
-				versionstamp: 3,
+				versionstamp: 196608,
 				changes: [
 					{
 						update: {
@@ -131,7 +131,7 @@ async fn table_change_feeds() -> Result<(), Error> {
 				]
 			},
 			{
-				versionstamp: 4,
+				versionstamp: 262144,
 				changes: [
 					{
 						delete: {
@@ -141,7 +141,7 @@ async fn table_change_feeds() -> Result<(), Error> {
 				]
 			},
 			{
-				versionstamp: 5,
+				versionstamp: 327680,
 				changes: [
 					{
 						update: {
