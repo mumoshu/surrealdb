@@ -189,13 +189,10 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn changefeed_none() {
+	fn changefeed_missing() {
 		let sql: &str = "";
 		let res = changefeed(sql);
-		assert!(res.is_ok());
-		let out = res.unwrap().1;
-		assert_eq!("", format!("{}", out));
-		assert_eq!(out, ChangeFeed::none());
+		assert!(res.is_err());
 	}
 
 	#[test]
