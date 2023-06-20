@@ -434,6 +434,11 @@ impl Transaction {
 				inner: Inner::FDB(v),
 				..
 			} => v.get_timestamp().await,
+			#[cfg(feature = "kv-speedb")]
+			Transaction {
+				inner: Inner::SpeeDB(v),
+				..
+			} => v.get_timestamp(key).await,
 			#[allow(unreachable_patterns)]
 			_ => unreachable!(),
 		}
@@ -492,6 +497,14 @@ impl Transaction {
 				inner: Inner::FDB(v),
 				..
 			} => v.set_versionstamped_key(prefix, suffix, val).await,
+			#[cfg(feature = "kv-speedb")]
+			Transaction {
+				inner: Inner::SpeeDB(v),
+				..
+			} => {
+				let k = v.get_versionstamped_key(ts_key, prefix, suffix).await?;
+				v.set(k, val).await
+			}
 			#[allow(unreachable_patterns)]
 			_ => unreachable!(),
 		}
