@@ -215,10 +215,7 @@ pub fn statement(i: &str) -> IResult<&str, Statement> {
 			map(set, Statement::Set),
 			map(show, Statement::Show),
 			map(sleep, Statement::Sleep),
-			alt((
-				map(update, Statement::Update),
-				map(yuse, Statement::Use),
-			)),
+			alt((map(update, Statement::Update), map(yuse, Statement::Use))),
 		)),
 		mightbespace,
 	)(i)

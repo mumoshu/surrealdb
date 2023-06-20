@@ -26,11 +26,7 @@ pub struct ShowStatement {
 
 impl ShowStatement {
 	/// Process this type returning a computed simple Value
-	pub(crate) async fn compute(
-		&self,
-		ctx: &Context<'_>,
-		opt: &Options,
-	) -> Result<Value, Error> {
+	pub(crate) async fn compute(&self, ctx: &Context<'_>, opt: &Options) -> Result<Value, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
 		// Allowed to run?
