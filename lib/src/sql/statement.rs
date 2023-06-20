@@ -154,7 +154,7 @@ impl Statement {
 			Self::Remove(v) => v.compute(ctx, opt).await,
 			Self::Select(v) => v.compute(ctx, opt).await,
 			Self::Set(v) => v.compute(ctx, opt).await,
-			Self::Show(v) => v.compute(ctx, opt, txn, doc).await,
+			Self::Show(v) => v.compute(ctx, opt).await,
 			Self::Sleep(v) => v.compute(ctx, opt).await,
 			Self::Update(v) => v.compute(ctx, opt).await,
 			_ => unreachable!(),
@@ -215,8 +215,10 @@ pub fn statement(i: &str) -> IResult<&str, Statement> {
 			map(set, Statement::Set),
 			map(show, Statement::Show),
 			map(sleep, Statement::Sleep),
-			map(update, Statement::Update),
-			map(yuse, Statement::Use),
+			alt((
+				map(update, Statement::Update),
+				map(yuse, Statement::Use),
+			)),
 		)),
 		mightbespace,
 	)(i)

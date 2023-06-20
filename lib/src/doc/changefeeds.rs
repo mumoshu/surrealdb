@@ -1,16 +1,14 @@
 use crate::ctx::Context;
 use crate::dbs::Options;
 use crate::dbs::Statement;
-use crate::dbs::Transaction;
 use crate::doc::Document;
 use crate::err::Error;
 
 impl<'a> Document<'a> {
 	pub async fn changefeeds(
 		&self,
-		_ctx: &Context<'_>,
+		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
 		_stm: &Statement<'_>,
 	) -> Result<(), Error> {
 		// Check if forced
@@ -18,14 +16,15 @@ impl<'a> Document<'a> {
 			return Ok(());
 		}
 		// Get the record id
+		let txn = ctx.clone_transaction()?;
 		let _ = self.id.as_ref().unwrap();
-		let tb = self.tb(opt, txn).await?;
+		let tb = self.tb(opt, &txn).await?;
 		let tb = tb.as_ref();
 		if tb.changefeed.enabled {
 			// Clone transaction
-			let run = txn.clone();
+			let txn = ctx.clone_transaction()?;
 			// Claim transaction
-			let mut run = run.lock().await;
+			let mut run = txn.lock().await;
 
 			let id = self.id.as_ref().unwrap().clone();
 			// Create the changefeed entry

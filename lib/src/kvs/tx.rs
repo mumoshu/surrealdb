@@ -1980,11 +1980,11 @@ impl Transaction {
 	pub(crate) fn record_change<'b>(
 		&mut self,
 		tb: &DefineTableStatement,
-		id: Thing,
+		id: &Thing,
 		v: Cow<'b, Value>,
 	) {
 		if tb.changefeed.enabled {
-			self.cf.update(tb.name.to_owned(), id, v)
+			self.cf.update(tb.name.to_owned(), id.clone(), v)
 		}
 	}
 

@@ -28,10 +28,8 @@ impl ShowStatement {
 	/// Process this type returning a computed simple Value
 	pub(crate) async fn compute(
 		&self,
-		_ctx: &Context<'_>,
+		ctx: &Context<'_>,
 		opt: &Options,
-		txn: &Transaction,
-		_doc: Option<&Value>,
 	) -> Result<Value, Error> {
 		// Selected DB?
 		opt.needs(Level::Db)?;
@@ -40,9 +38,9 @@ impl ShowStatement {
 		// Allowed to run?
 		opt.check(Level::No)?;
 		// Clone transaction
-		let run = txn.clone();
+		let txn = ctx.clone_transaction()?;
 		// Claim transaction
-		let mut run = run.lock().await;
+		let mut run = txn.lock().await;
 		// Process the show query
 		let tb = self.table.as_ref().map(|x| x.as_str());
 		let r = crate::cf::read(&mut run, opt.ns(), opt.db(), tb, self.since, self.limit).await?;

@@ -95,7 +95,7 @@ mod tests {
 			id: Id::String("A".to_string()),
 		};
 		let value_a: super::Value = "a".into();
-		tx1.record_change(&dtb, thing_a, Cow::Borrowed(&value_a));
+		tx1.record_change(&dtb, &thing_a, Cow::Borrowed(&value_a));
 		tx1.complete_changes(ns, db, true).await.unwrap();
 		let _r1 = tx1.commit().await.unwrap();
 
@@ -105,7 +105,7 @@ mod tests {
 			id: Id::String("C".to_string()),
 		};
 		let value_c: Value = "c".into();
-		tx2.record_change(&dtb, thing_c, Cow::Borrowed(&value_c));
+		tx2.record_change(&dtb, &thing_c, Cow::Borrowed(&value_c));
 		tx2.complete_changes(ns, db, true).await.unwrap();
 		let _r2 = tx2.commit().await.unwrap();
 
@@ -116,13 +116,13 @@ mod tests {
 			id: Id::String("B".to_string()),
 		};
 		let value_b: Value = "b".into();
-		tx3.record_change(&dtb, thing_b, Cow::Borrowed(&value_b));
+		tx3.record_change(&dtb, &thing_b, Cow::Borrowed(&value_b));
 		let thing_c2 = Thing {
 			tb: tb.clone().0,
 			id: Id::String("C".to_string()),
 		};
 		let value_c2: Value = "c2".into();
-		tx3.record_change(&dtb, thing_c2, Cow::Borrowed(&value_c2));
+		tx3.record_change(&dtb, &thing_c2, Cow::Borrowed(&value_c2));
 		tx3.complete_changes(ns, db, true).await.unwrap();
 		tx3.commit().await.unwrap();
 
